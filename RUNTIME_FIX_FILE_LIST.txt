@@ -1,0 +1,34 @@
+RUNTIME FIX FILE INVENTORY
+==========================
+
+MODIFIED
+- ASSET_REPLACEMENT_GUIDE.md
+- BUILD_REPORT.md
+- FINAL_ACCEPTANCE_CHECKLIST.md
+- FINAL_CHANGELOG.md
+- KNOWN_LIMITATIONS.md
+- README.md
+- STATIC_VALIDATION_REPORT.txt
+- TEST_REPORT.md
+- resources/asset_manifest.json
+- scripts/characters/arin.gd
+- scripts/core/main.gd
+- scripts/hazards/falling_rock.gd
+- scripts/interactables/puzzle_rune.gd
+- scripts/levels/level_02_echo_archive.gd
+- scripts/levels/level_04_sealed_heart.gd
+- scripts/levels/level_manager.gd
+- scripts/levels/prologue_forest.gd
+- tests/asset_manifest_test.gd
+- tools/static_validate.py
+
+ADDED
+- RUNTIME_FIX_FILE_LIST.txt
+- scripts/components/echo_sequence_tracker.gd
+- tests/echo_sequence_test.gd
+- tests/final_niko_randomization_test.gd
+- tests/restart_guard_test.gd
+- tests/spawn_position_test.gd
+
+DELETED
+- None

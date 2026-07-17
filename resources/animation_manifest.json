@@ -1,0 +1,96 @@
+{
+  "arin": {
+    "idle": {
+      "asset_key": "arin_idle",
+      "frames": 4,
+      "fps": 6.0,
+      "loop": true
+    },
+    "run": {
+      "asset_key": "arin_run",
+      "frames": 6,
+      "fps": 10.0,
+      "loop": true
+    },
+    "jump": {
+      "asset_key": "arin_jump",
+      "frames": 3,
+      "fps": 8.0,
+      "loop": false
+    },
+    "fall": {
+      "asset_key": "arin_fall",
+      "frames": 2,
+      "fps": 6.0,
+      "loop": true
+    },
+    "kick": {
+      "asset_key": "arin_kick",
+      "frames": 6,
+      "fps": 12.0,
+      "loop": false
+    },
+    "charged_kick": {
+      "asset_key": "arin_charged_kick",
+      "frames": 7,
+      "fps": 10.0,
+      "loop": false
+    },
+    "push_fail": {
+      "asset_key": "arin_push_fail",
+      "frames": 6,
+      "fps": 8.0,
+      "loop": false
+    },
+    "hurt": {
+      "asset_key": "arin_hurt",
+      "frames": 3,
+      "fps": 10.0,
+      "loop": false
+    },
+    "knockout": {
+      "asset_key": "arin_knockout",
+      "frames": 6,
+      "fps": 8.0,
+      "loop": false
+    },
+    "victory": {
+      "asset_key": "arin_victory",
+      "frames": 6,
+      "fps": 8.0,
+      "loop": false
+    }
+  },
+  "niko": {
+    "idle": {
+      "asset_key": "niko_idle",
+      "frames": 4,
+      "fps": 6.0,
+      "loop": true
+    },
+    "run": {
+      "asset_key": "niko_run",
+      "frames": 6,
+      "fps": 10.0,
+      "loop": true
+    },
+    "fall": {
+      "asset_key": "niko_fall",
+      "frames": 4,
+      "fps": 8.0,
+      "loop": false
+    },
+    "trapped": {
+      "asset_key": "niko_trapped",
+      "frames": 4,
+      "fps": 5.0,
+      "loop": true
+    },
+    "rescue": {
+      "asset_key": "niko_rescue",
+      "frames": 6,
+      "fps": 8.0,
+      "loop": false
+    }
+  }
+}

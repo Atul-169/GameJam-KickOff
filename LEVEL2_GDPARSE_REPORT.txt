@@ -1,0 +1,17 @@
+PASS scripts/levels/level_02_echo_archive.gd
+PASS scripts/components/echo_sequence_tracker.gd
+PASS scripts/interactables/echo_orb.gd
+PASS scripts/interactables/puzzle_rune.gd
+PASS scripts/enemies/echo_warden.gd
+PASS scripts/enemies/echo_core_hitbox.gd
+PASS scripts/enemies/warden_echo_projectile.gd
+PASS scripts/environment/echo_breakable_wall.gd
+PASS scripts/interactables/echo_timed_gate.gd
+PASS scripts/interactables/echo_seal_lock.gd
+PASS scripts/interactables/resonance_strike.gd
+PASS scripts/hazards/echo_shockwave.gd
+PASS tests/echo_sequence_test.gd
+PASS tests/level2_echo_warden_test.gd
+PASS tests/level2_orb_recovery_test.gd
+PASS tests/project_smoke_test.gd
+PASS tests/asset_manifest_test.gd

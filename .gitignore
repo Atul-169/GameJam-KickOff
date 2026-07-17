@@ -1,0 +1,11 @@
+.godot/
+.import/
+build/windows/*.exe
+build/windows/*.pck
+build/web/*
+!build/web/.gitkeep
+!build/windows/.gitkeep
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

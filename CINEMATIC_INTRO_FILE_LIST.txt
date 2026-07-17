@@ -1,0 +1,35 @@
+CINEMATIC INTRO PATCH FILE INVENTORY
+===================================
+Modified existing files: 21
+MODIFIED BUILD_REPORT.md
+MODIFIED FINAL_ACCEPTANCE_CHECKLIST.md
+MODIFIED FINAL_CHANGELOG.md
+MODIFIED GAMEPLAY_FLOW.md
+MODIFIED GDPARSE_REPORT.txt
+MODIFIED KNOWN_LIMITATIONS.md
+MODIFIED README.md
+MODIFIED STATIC_VALIDATION_REPORT.txt
+MODIFIED TARGETED_GDPARSE_REPORT.txt
+MODIFIED TEST_REPORT.md
+MODIFIED project.godot
+MODIFIED scripts/characters/arin.gd
+MODIFIED scripts/characters/niko.gd
+MODIFIED scripts/core/main.gd
+MODIFIED scripts/interactables/ancient_seal.gd
+MODIFIED scripts/interactables/football.gd
+MODIFIED scripts/levels/prologue_forest.gd
+MODIFIED scripts/ui/game_hud.gd
+MODIFIED tests/dialogue_input_safety_test.gd
+MODIFIED tests/prologue_sequence_guard_test.gd
+MODIFIED tools/static_validate.py
+
+Added files: 5
+ADDED CINEMATIC_INTRO_CHANGELOG.md
+ADDED CINEMATIC_INTRO_FILE_LIST.txt
+ADDED scripts/cutscenes/prologue_cinematic.gd
+ADDED tests/automatic_dialogue_test.gd
+ADDED tests/prologue_cinematic_test.gd
+
+Deleted project files: 0
+
+Packaging note: generated build placeholders under build/ are excluded from the final ZIP.

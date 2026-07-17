@@ -1,0 +1,49 @@
+LEVEL 2 WARDEN FILE INVENTORY
+=============================
+
+MODIFIED (18)
+- ASSET_REPLACEMENT_GUIDE.md
+- BUILD_REPORT.md
+- FINAL_ACCEPTANCE_CHECKLIST.md
+- FINAL_CHANGELOG.md
+- GAMEPLAY_FLOW.md
+- KNOWN_LIMITATIONS.md
+- README.md
+- STATIC_VALIDATION_REPORT.txt
+- TEST_REPORT.md
+- resources/asset_manifest.json
+- scripts/components/echo_sequence_tracker.gd
+- scripts/interactables/echo_orb.gd
+- scripts/interactables/puzzle_rune.gd
+- scripts/levels/level_02_echo_archive.gd
+- tests/asset_manifest_test.gd
+- tests/echo_sequence_test.gd
+- tests/project_smoke_test.gd
+- tools/static_validate.py
+
+ADDED (22)
+- FULL_PROJECT_GDLINT_PARSE_REPORT.txt
+- LEVEL2_GDLINT_REPORT.txt
+- LEVEL2_GDPARSE_REPORT.txt
+- LEVEL2_WARDEN_CHANGELOG.md
+- LEVEL2_WARDEN_FILE_LIST.txt
+- scenes/enemies/echo_warden.tscn
+- scenes/enemies/warden_echo_projectile.tscn
+- scenes/environment/echo_breakable_wall.tscn
+- scenes/hazards/echo_shockwave.tscn
+- scenes/interactables/echo_seal_lock.tscn
+- scenes/interactables/echo_timed_gate.tscn
+- scenes/interactables/resonance_strike.tscn
+- scripts/enemies/echo_core_hitbox.gd
+- scripts/enemies/echo_warden.gd
+- scripts/enemies/warden_echo_projectile.gd
+- scripts/environment/echo_breakable_wall.gd
+- scripts/hazards/echo_shockwave.gd
+- scripts/interactables/echo_seal_lock.gd
+- scripts/interactables/echo_timed_gate.gd
+- scripts/interactables/resonance_strike.gd
+- tests/level2_echo_warden_test.gd
+- tests/level2_orb_recovery_test.gd
+
+DELETED (0)
+- None

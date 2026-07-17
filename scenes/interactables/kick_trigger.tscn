@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource path="res://scripts/interactables/kick_trigger.gd" type="Script" id="1"]
+[sub_resource type="RectangleShape2D" id="Shape"]
+size = Vector2(90, 90)
+[node name="KickTrigger" type="Area2D"]
+script = ExtResource("1")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape")
