@@ -1,0 +1,50 @@
+{
+  "character": "Arin",
+  "atlases": {
+    "run": {
+      "file": "atlases_4k/arin_run_4k.png",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "frames": 6,
+      "grid": "3x3"
+    },
+    "jump_fall": {
+      "file": "atlases_4k/arin_jump_fall_4k.png",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "frames": 5,
+      "grid": "3x3"
+    },
+    "charged_kick": {
+      "file": "atlases_4k/arin_charged_kick_4k.png",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "frames": 7,
+      "grid": "3x3"
+    },
+    "push_fail": {
+      "file": "atlases_4k/arin_push_fail_4k.png",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "frames": 6,
+      "grid": "3x3"
+    }
+  },
+  "runtime_frames": {
+    "dimensions": [
+      1024,
+      1024
+    ],
+    "transparent": true
+  },
+  "godot_scene": "arin_4k.tscn",
+  "godot_spriteframes": "arin_4k_spriteframes.tres"
+}

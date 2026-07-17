@@ -1,0 +1,191 @@
+[gd_resource type="SpriteFrames" load_steps=26 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/idle/idle_01.png" id="1_idle_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_01.png" id="2_run_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_02.png" id="3_run_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_03.png" id="4_run_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_04.png" id="5_run_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_05.png" id="6_run_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/run/run_06.png" id="7_run_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/jump_fall/jump_fall_01.png" id="8_jump_fall_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/jump_fall/jump_fall_02.png" id="9_jump_fall_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/jump_fall/jump_fall_03.png" id="10_jump_fall_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/jump_fall/jump_fall_04.png" id="11_jump_fall_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/jump_fall/jump_fall_05.png" id="12_jump_fall_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_01.png" id="13_charged_kick_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_02.png" id="14_charged_kick_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_03.png" id="15_charged_kick_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_04.png" id="16_charged_kick_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_05.png" id="17_charged_kick_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_06.png" id="18_charged_kick_6"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/charged_kick/charged_kick_07.png" id="19_charged_kick_7"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_01.png" id="20_push_fail_1"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_02.png" id="21_push_fail_2"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_03.png" id="22_push_fail_3"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_04.png" id="23_push_fail_4"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_05.png" id="24_push_fail_5"]
+[ext_resource type="Texture2D" path="res://assets/characters/arin_4k/frames_1k/push_fail/push_fail_06.png" id="25_push_fail_6"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_idle_1")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 1.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_run_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_run_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_run_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_run_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_run_5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_run_6")
+}],
+"loop": true,
+"name": &"run",
+"speed": 10.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_jump_fall_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_jump_fall_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_jump_fall_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_jump_fall_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_jump_fall_5")
+}],
+"loop": false,
+"name": &"jump_fall",
+"speed": 8.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_jump_fall_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_jump_fall_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_jump_fall_3")
+}],
+"loop": false,
+"name": &"jump",
+"speed": 8.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_jump_fall_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_jump_fall_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_jump_fall_5")
+}],
+"loop": true,
+"name": &"fall",
+"speed": 8.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_charged_kick_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_charged_kick_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_charged_kick_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_charged_kick_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_charged_kick_5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_charged_kick_6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_charged_kick_7")
+}],
+"loop": false,
+"name": &"charged_kick",
+"speed": 10.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_charged_kick_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_charged_kick_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_charged_kick_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_charged_kick_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_charged_kick_5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_charged_kick_6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_charged_kick_7")
+}],
+"loop": false,
+"name": &"kick",
+"speed": 12.0
+},
+{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("20_push_fail_1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_push_fail_2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_push_fail_3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_push_fail_4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_push_fail_5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_push_fail_6")
+}],
+"loop": false,
+"name": &"push_fail",
+"speed": 8.0
+}]
