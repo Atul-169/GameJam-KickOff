@@ -27,7 +27,7 @@ const BALL_FOREST_X := SEAL_X + NIKO_FALL_X_OFFSET
 
 var niko: NikoCharacter
 var football: Football
-var seal: AncientSeal
+@onready var seal: AncientSeal = $AncientSeal
 var astra_visual: Node2D
 var astra_float_tween: Tween
 
@@ -48,7 +48,7 @@ func build_level() -> void:
 	transition_started = false
 	sequence_state = SequenceState.INTRO_START
 
-	_forest_art()
+	#_forest_art()
 
 	football = spawn_scene(
 		"res://scenes/interactables/football.tscn",
@@ -60,13 +60,12 @@ func build_level() -> void:
 		Vector2(850.0, GROUND_Y)
 	) as NikoCharacter
 
-	seal = AncientSeal.new()
-	seal.position = Vector2(SEAL_X, GROUND_Y - 96.0)
 	seal.enabled = true
 	seal.interaction_enabled = false
 	seal.kick_enabled = false
-	add_child(seal)
-	seal.kicked_open.connect(_seal_kicked)
+
+	if not seal.kicked_open.is_connected(_seal_kicked):
+		seal.kicked_open.connect(_seal_kicked)
 
 
 func post_ready() -> void:

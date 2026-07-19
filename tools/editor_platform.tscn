@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dja8wyns0spjv"]
+
+[node name="EditorPlatform" type="StaticBody2D" unique_id=95960210]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1483400666]
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=1109364618]
+polygon = PackedVector2Array(135, 16, 138, 13)
+uv = PackedVector2Array(135, 16, 138, 13)

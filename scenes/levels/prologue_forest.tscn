@@ -1,4 +1,120 @@
-[gd_scene load_steps=2 format=3]
-[ext_resource path="res://scripts/levels/prologue_forest.gd" type="Script" id="1"]
-[node name="PrologueForest" type="Node2D"]
+[gd_scene format=3 uid="uid://rt1tt1vn83fk"]
+
+[ext_resource type="Script" uid="uid://bukkt03t023yj" path="res://scripts/levels/prologue_forest.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bre7v23k1wmxi" path="res://assets/prologue/backgrounds/prologue_forest_background.png" id="2_g7ei2"]
+[ext_resource type="Texture2D" uid="uid://bf6e3lf5j1v21" path="res://assets/prologue/backgrounds/football_field.png" id="3_08fns"]
+[ext_resource type="Texture2D" uid="uid://dp24nf2qgh5qk" path="res://assets/prologue/parallax/field_far.png" id="4_6uyy7"]
+[ext_resource type="Texture2D" uid="uid://bosyt1ojv5gx" path="res://assets/prologue/parallax/field_mid.png" id="5_hvkpj"]
+[ext_resource type="Texture2D" uid="uid://dymqnctgb34hn" path="res://assets/prologue/parallax/field_ground.png" id="6_olyfm"]
+[ext_resource type="Texture2D" uid="uid://dqibn6fppuvlm" path="res://assets/prologue/parallax/field_foreground.png" id="7_ctw32"]
+[ext_resource type="Texture2D" uid="uid://b4yoqwilps6jb" path="res://assets/prologue/parallax/forest_far.png" id="8_jrfyn"]
+[ext_resource type="Texture2D" uid="uid://usgen7wpwtvj" path="res://assets/prologue/parallax/forest_mid.png" id="9_2xkem"]
+[ext_resource type="Texture2D" uid="uid://bqjbygtuoce0b" path="res://assets/prologue/parallax/forest_ground.png" id="10_k1i0w"]
+[ext_resource type="Texture2D" uid="uid://bol314vfktf6u" path="res://assets/prologue/parallax/forest_foreground.png" id="11_ej42w"]
+[ext_resource type="Script" uid="uid://b22pk0u4445v4" path="res://scripts/interactables/ancient_seal.gd" id="12_k1i0w"]
+[ext_resource type="Texture2D" uid="uid://cmgm4fufix7y4" path="res://assets/prologue/interactables/ancient_seal_closed.png" id="13_ej42w"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xrivr"]
+size = Vector2(2210.7534, 267.5982)
+
+[node name="PrologueForest" type="Node2D" unique_id=1758425441]
 script = ExtResource("1")
+use_default_floor = false
+
+[node name="AncientSeal" type="Area2D" parent="." unique_id=185638891]
+z_index = 50
+position = Vector2(5850, 1404)
+script = ExtResource("12_k1i0w")
+
+[node name="ClosedVisual" type="Sprite2D" parent="AncientSeal" unique_id=1800307683]
+position = Vector2(-2780, -400)
+scale = Vector2(0.18, 0.18)
+texture = ExtResource("13_ej42w")
+
+[node name="ForestGroundCollision" type="StaticBody2D" parent="." unique_id=1425262232]
+position = Vector2(666, 754)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ForestGroundCollision" unique_id=46526407]
+position = Vector2(2343, 245)
+shape = SubResource("RectangleShape2D_xrivr")
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=1961413315]
+layer = -10
+
+[node name="ForestBackground" type="Sprite2D" parent="." unique_id=1277523946]
+visible = false
+z_index = -10
+position = Vector2(2826.143, 542.5)
+scale = Vector2(1.0883455, 1.1594049)
+texture = ExtResource("2_g7ei2")
+offset = Vector2(0.78, 0.78)
+
+[node name="FootballField" type="Sprite2D" parent="." unique_id=1115243498]
+visible = false
+position = Vector2(926.00006, 520.875)
+scale = Vector2(1.1794258, 1.164984)
+texture = ExtResource("3_08fns")
+
+[node name="FieldGroundCollision" type="StaticBody2D" parent="." unique_id=1920425036]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FieldGroundCollision" unique_id=987054617]
+position = Vector2(1212.2902, 1081.1262)
+scale = Vector2(1.1794258, 1.1649839)
+shape = SubResource("RectangleShape2D_xrivr")
+
+[node name="FieldZone" type="Node2D" parent="." unique_id=514169762]
+texture_filter = 2
+position = Vector2(920, 520.875)
+scale = Vector2(1.179, 1.165)
+
+[node name="Far" type="Sprite2D" parent="FieldZone" unique_id=1924933408]
+z_index = -12
+texture_filter = 2
+texture = ExtResource("4_6uyy7")
+
+[node name="Mid" type="Sprite2D" parent="FieldZone" unique_id=1935265198]
+z_index = -25
+texture_filter = 2
+texture = ExtResource("5_hvkpj")
+
+[node name="Ground" type="Sprite2D" parent="FieldZone" unique_id=72079031]
+z_index = -10
+texture_filter = 2
+position = Vector2(-11.026293, 30.150213)
+texture = ExtResource("6_olyfm")
+
+[node name="Foreground" type="Sprite2D" parent="FieldZone" unique_id=1809392583]
+z_index = 20
+texture_filter = 2
+position = Vector2(-8.481764, 11.266094)
+texture = ExtResource("7_ctw32")
+
+[node name="ForestZone" type="Node2D" parent="." unique_id=1677336597]
+texture_filter = 2
+position = Vector2(2750, 600)
+
+[node name="Far" type="Sprite2D" parent="ForestZone" unique_id=1501310716]
+z_index = -12
+texture_filter = 2
+position = Vector2(50.000023, -77.00002)
+scale = Vector2(1.0669856, 1.1702975)
+texture = ExtResource("8_jrfyn")
+
+[node name="Mid" type="Sprite2D" parent="ForestZone" unique_id=2011025477]
+z_index = -25
+texture_filter = 2
+texture = ExtResource("9_2xkem")
+
+[node name="Ground" type="Sprite2D" parent="ForestZone" unique_id=1629500649]
+z_index = -10
+texture_filter = 2
+position = Vector2(-40.5, 97.93748)
+scale = Vector2(1.0173445, 1.1563495)
+texture = ExtResource("10_k1i0w")
+
+[node name="Foreground" type="Sprite2D" parent="ForestZone" unique_id=1858953204]
+z_index = 20
+texture_filter = 2
+position = Vector2(39.250015, -28.37504)
+scale = Vector2(1.0804425, 1.0741233)
+texture = ExtResource("11_ej42w")
