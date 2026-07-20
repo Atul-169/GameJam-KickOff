@@ -297,7 +297,7 @@ func _build_archive_geometry() -> void:
 	_add_textured_floor(Rect2(5800.0, 835.0, 500.0, 34.0))
 
 	_add_textured_wall(
-		Vector2(930.0, 680.0),
+		Vector2(930.0, 640.0),
 		Vector2(300.0, 30.0),
 		-0.46
 	)
@@ -463,8 +463,27 @@ func _make_statue_rune(
 
 
 func _orb_started() -> void:
-	_begin_archive_challenge()
+	if completed or failed:
+		return
 
+	# start_kickoff() is only needed when gameplay is not active yet.
+	if state_controller.state != GameState.GameMode.ACTIVE:
+		start_kickoff()
+
+	# These must activate regardless of the previous game-state value.
+	# Previously they were inside the condition above, which could leave
+	# the Warden permanently inactive.
+	warden.set_world_active(true)
+	cracked_wall.set_world_active(true)
+
+	set_objective(
+		"Guide the Echo Orb through the waking archive."
+	)
+
+	hud.show_message(
+		"THE ARCHIVE STIRS",
+		1.6
+	)
 
 func _begin_archive_challenge() -> void:
 	if archive_started or completed or failed:
@@ -536,10 +555,17 @@ func _ear_awakened() -> void:
 	)
 
 	set_objective(
-		"The Warden hears. Reach the watcher rune and kick it directly."
+		"Stand clear. The Warden will smash the cracked wall."
 	)
 
 	warden.awaken_hearing()
+
+	# The first Hearing charge is scripted toward the cracked wall.
+	# Arin no longer needs to cross over the Warden and lure it manually.
+	warden.force_charge_at(
+		cracked_wall.global_position
+	)
+
 	orb.set_pedestal(EYE_ORB_PEDESTAL)
 
 

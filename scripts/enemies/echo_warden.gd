@@ -23,9 +23,14 @@ const GRAVITY := 1200.0
 const CORE_MAX_HEALTH := 3
 
 @export var move_speed := 115.0
+
+# Hearing uses a slower and more readable charge.
+@export var hearing_charge_speed := 225.0
+
+# Vision and Voice keep the stronger boss charge.
 @export var charge_speed := 610.0
 @export var charge_duration := 1.35
-@export var charge_warning := 0.48
+@export var charge_warning := 0.32
 @export var projectile_interval := 3.1
 @export var scream_interval := 4.8
 @export var core_exposure_duration := 2.65
@@ -37,6 +42,10 @@ var action := Action.IDLE
 var action_timer := 0.0
 var charge_direction := 1.0
 var charge_hit_player := false
+
+# A scripted wall charge may need to travel farther than a normal charge.
+var queued_charge_duration := 0.0
+
 var last_sound_position := Vector2.ZERO
 var sound_memory := 0.0
 var sound_scan_timer := 0.0
@@ -59,7 +68,10 @@ var core_pulse_tween: Tween
 @onready var phase_label: Label = $PhaseLabel
 
 func _ready() -> void:
-    collision_layer = CollisionLayers.ENEMY
+    collision_layer = (
+        CollisionLayers.ENEMY
+        | CollisionLayers.WORLD
+    )
     collision_mask = (
         CollisionLayers.WORLD
         | CollisionLayers.PLAYER
@@ -69,7 +81,7 @@ func _ready() -> void:
     visual_root.add_child(
         AssetRegistry.make_visual(
             "echo_warden",
-            Vector2(126, 170),
+            Vector2(126, 124),
             Color("697387"),
             "WARDEN",
         )
@@ -120,10 +132,20 @@ func set_world_active(value: bool) -> void:
 func awaken_hearing() -> void:
     if awakening >= Awakening.HEARING:
         return
+
     awakening = Awakening.HEARING
+    world_active = true
+    action = Action.IDLE
+    action_timer = 0.0
+    velocity = Vector2.ZERO
+
     phase_label.text = "HEARING"
     visual_root.modulate = Color("9aa5b8")
-    hearing_cooldown = 0.5
+
+    hearing_cooldown = 0.0
+    sound_scan_timer = 0.0
+    sound_memory = 0.0
+
     awakening_changed.emit(awakening)
 
 func awaken_vision() -> void:
@@ -153,6 +175,36 @@ func notify_sound(position_value: Vector2, intensity: float = 1.0) -> void:
         return
     last_sound_position = position_value
     sound_memory = maxf(sound_memory, 0.7 + intensity * 0.55)
+
+
+func force_charge_at(position_value: Vector2) -> void:
+    if (
+        not world_active
+        or awakening != Awakening.HEARING
+        or action == Action.CHARGING
+    ):
+        return
+
+    velocity.x = 0.0
+    action = Action.IDLE
+    action_timer = 0.0
+
+    var distance_to_target := absf(
+        position_value.x - global_position.x
+    )
+
+    var safe_speed := maxf(
+        hearing_charge_speed,
+        1.0
+    )
+
+    # Keep charging long enough to physically reach the cracked wall.
+    queued_charge_duration = maxf(
+        charge_duration,
+        distance_to_target / safe_speed + 0.35
+    )
+
+    _begin_charge(position_value)
 
 func receive_kick(
     _force: float,
@@ -217,8 +269,12 @@ func reset_state() -> void:
     enrage_timer = 0.0
     core_health = CORE_MAX_HEALTH
     core_hit_this_window = false
+    queued_charge_duration = 0.0
     collision.set_deferred("disabled", false)
-    collision_layer = CollisionLayers.ENEMY
+    collision_layer = (
+        CollisionLayers.ENEMY
+        | CollisionLayers.WORLD
+    )
     collision_mask = (
         CollisionLayers.WORLD
         | CollisionLayers.PLAYER
@@ -246,7 +302,13 @@ func _physics_process(delta: float) -> void:
             velocity.x = 0.0
             if action_timer <= 0.0:
                 action = Action.CHARGING
-                action_timer = charge_duration
+
+                if queued_charge_duration > 0.0:
+                    action_timer = queued_charge_duration
+                    queued_charge_duration = 0.0
+                else:
+                    action_timer = charge_duration
+
                 charge_hit_player = false
         Action.CHARGING:
             velocity.x = charge_direction * _current_charge_speed()
@@ -257,7 +319,6 @@ func _physics_process(delta: float) -> void:
             if action_timer <= 0.0:
                 action = Action.IDLE
                 modulate = Color.WHITE
-                _restore_phase_label()
         Action.SCREAM_TELEGRAPH:
             velocity.x = 0.0
             if action_timer <= 0.0:
@@ -297,11 +358,28 @@ func _update_timers(delta: float) -> void:
 func _listen_for_movement(delta: float) -> void:
     if target == null or not is_instance_valid(target):
         return
-    sound_scan_timer = maxf(sound_scan_timer - delta, 0.0)
-    var noisy := absf(target.velocity.x) > 55.0 or not target.is_on_floor()
+
+    if awakening < Awakening.HEARING:
+        return
+
+    sound_scan_timer = maxf(
+        sound_scan_timer - delta,
+        0.0
+    )
+
+    # Arin's MOVE_SPEED is 260. Any deliberate running, jumping,
+    # landing or kicking should be audible to the Hearing phase.
+    var horizontal_noise := absf(target.velocity.x) > 25.0
+    var air_noise := not target.is_on_floor()
+    var noisy := horizontal_noise or air_noise
+
     if noisy and sound_scan_timer <= 0.0:
-        notify_sound(target.global_position, 0.45)
-        sound_scan_timer = 0.24
+        notify_sound(
+            target.global_position,
+            0.55
+        )
+
+        sound_scan_timer = 0.18
 
 func _think_idle() -> void:
     if target == null or not is_instance_valid(target):
@@ -333,16 +411,27 @@ func _think_idle() -> void:
         velocity.x = 0.0
 
 func _begin_charge(sound_position: Vector2) -> void:
-    charge_direction = signf(sound_position.x - global_position.x)
+    charge_direction = signf(
+        sound_position.x - global_position.x
+    )
+
     if is_zero_approx(charge_direction):
         charge_direction = facing
+
     facing = charge_direction
     action = Action.CHARGE_TELEGRAPH
     action_timer = charge_warning
-    hearing_cooldown = 1.25
+
+    hearing_cooldown = (
+        0.58
+        if awakening == Awakening.HEARING
+        else 1.25
+    )
+
     sound_memory = 0.0
+    velocity.x = 0.0
     modulate = Color("ffd27d")
-    phase_label.text = "CHARGE"
+    phase_label.text = "RUSH"
 
 func _enter_stun(duration: float) -> void:
     action = Action.STUNNED
@@ -384,56 +473,67 @@ func _set_core_exposed(active: bool, duration: float = 0.0) -> void:
 func _handle_collisions() -> void:
     if action != Action.CHARGING:
         return
+
     for index in get_slide_collision_count():
         var collision_data := get_slide_collision(index)
         var collider := collision_data.get_collider()
+
         if collider == null:
             continue
-        if collider is ArinController and not charge_hit_player:
+
+        if (
+            collider is ArinController
+            and not charge_hit_player
+            and _is_lower_body_contact(collision_data)
+        ):
             charge_hit_player = true
+
             collider.take_damage(
                 1,
-                Vector2(charge_direction * 300.0, -110.0),
+                Vector2(
+                    charge_direction * 250.0,
+                    -90.0
+                )
             )
+
         if collider.has_method("receive_warden_charge"):
             var broken := bool(
                 collider.call(
                     "receive_warden_charge",
                     _current_charge_speed(),
-                    global_position,
+                    global_position
                 )
             )
+
             if broken:
                 _enter_stun(1.15)
-                if target != null and is_instance_valid(target):
+
+                if (
+                    target != null
+                    and is_instance_valid(target)
+                ):
                     target._camera_shake(8.0)
+
                 return
-        # move_and_slide() also reports the floor as a StaticBody2D.
-        # Only a SIDE collision should stop the horizontal charge.
-        # Previously the floor collision stunned the Warden immediately,
-        # so the label kept switching between CHARGE and STUNNED while
-        # the Warden appeared not to move.
-        var collision_normal := collision_data.get_normal()
-        var hit_side_wall := (
-            collider is StaticBody2D
-            and absf(collision_normal.x) > absf(collision_normal.y)
-        )
-        if hit_side_wall:
+
+        if collider is StaticBody2D:
             _enter_stun(0.55)
             return
 
-func _restore_phase_label() -> void:
-    match awakening:
-        Awakening.HEARING:
-            phase_label.text = "HEARING"
-        Awakening.VISION:
-            phase_label.text = "VISION"
-        Awakening.VOICE:
-            phase_label.text = "FULLY AWAKE"
-        Awakening.DEFEATED:
-            phase_label.text = "SILENCED"
-        _:
-            phase_label.text = "DORMANT"
+
+func _is_lower_body_contact(
+    collision_data: KinematicCollision2D
+) -> bool:
+    # The Warden's solid rectangle is centered on CollisionShape2D.
+    # Its center line is the boundary between the safe upper/head half
+    # and the damaging lower/body half.
+    #
+    # Landing on the head creates a contact point above this line,
+    # so Arin can stand there safely.
+    var contact_position := collision_data.get_position()
+    var lower_half_start_y := collision.global_position.y - 3.0
+
+    return contact_position.y >= lower_half_start_y
 
 func _on_player_kicked(
     _charged: bool, origin: Vector2, _direction: Vector2
@@ -441,6 +541,11 @@ func _on_player_kicked(
     notify_sound(origin, 1.0)
 
 func _current_charge_speed() -> float:
+    # Arin MOVE_SPEED = 260.
+    # HEARING remains at 225, so Arin is always slightly faster.
+    if awakening == Awakening.HEARING:
+        return hearing_charge_speed
+
     return charge_speed * _enrage_multiplier()
 
 func _enrage_multiplier() -> float:
