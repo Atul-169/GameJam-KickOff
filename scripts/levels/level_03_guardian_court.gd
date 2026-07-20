@@ -24,6 +24,7 @@ func _init() -> void:
     checkpoint_position = Vector2(200, 790)
 
 func build_level() -> void:
+    _build_guardian_court_background()
     add_label(
         "COURT OF GUARDIANS",
         Vector2(1550, 130),
@@ -340,3 +341,42 @@ func fail_challenge(reason: String) -> void:
     _set_combat_world_active(false)
     _set_gate_closed(false)
     super.fail_challenge(reason)
+
+
+func _build_guardian_court_background() -> void:
+    var texture_paths: Array[String] = [
+        "res://assets/environment/guardian_court/guardian_court_bg_01.png",
+        "res://assets/environment/guardian_court/guardian_court_bg_02.png",
+        "res://assets/environment/guardian_court/guardian_court_bg_03.png",
+    ]
+
+    for index in range(texture_paths.size()):
+        var path: String = texture_paths[index]
+
+        if not ResourceLoader.exists(path, "Texture2D"):
+            push_warning("Missing Guardian Court background: " + path)
+            continue
+
+        var texture := ResourceLoader.load(
+            path,
+            "Texture2D"
+        ) as Texture2D
+
+        if texture == null:
+            push_warning("Unable to load Guardian Court background: " + path)
+            continue
+
+        var sprite := Sprite2D.new()
+        sprite.name = "GuardianCourtBackground%02d" % (index + 1)
+        sprite.texture = texture
+        sprite.centered = true
+        sprite.position = Vector2(
+            960.0 + 1920.0 * float(index),
+            540.0
+        )
+
+        # LevelManager's opaque background uses z = -30.
+        sprite.z_index = -29
+        sprite.z_as_relative = false
+
+        add_child(sprite)

@@ -63,6 +63,7 @@ var progress := 0
 var runes_complete := false
 var warden_defeated := false
 var completion_dialogue_started := false
+var archive_started := false
 var resonance_generation := 0
 
 var door: ExitGate
@@ -209,7 +210,7 @@ func post_ready() -> void:
 		return
 
 	set_objective(
-		"Read the inscription. Awaken what sleeps in the archive."
+		"Kick each glowing rune directly. Follow the inscription for the order."
 	)
 
 	orb.kicked_off.connect(_orb_started)
@@ -431,11 +432,13 @@ func _make_statue_rune(
 	rune.rune_id = id
 	rune.caption = id
 	rune.accept_orb = true
+	rune.accept_player_kick = true
 	rune.accept_reflected_projectiles = false
 
 	var shape_node := CollisionShape2D.new()
 	var shape := CircleShape2D.new()
-	shape.radius = 58.0
+	# Slightly generous radius so a nearby normal kick connects reliably.
+	shape.radius = 72.0
 
 	shape_node.shape = shape
 	rune.add_child(shape_node)
@@ -460,32 +463,40 @@ func _make_statue_rune(
 
 
 func _orb_started() -> void:
-	if completed or failed:
+	_begin_archive_challenge()
+
+
+func _begin_archive_challenge() -> void:
+	if archive_started or completed or failed:
 		return
+
+	archive_started = true
 
 	if state_controller.state != GameState.GameMode.ACTIVE:
 		start_kickoff()
 
-		warden.set_world_active(true)
-		cracked_wall.set_world_active(true)
+	warden.set_world_active(true)
+	cracked_wall.set_world_active(true)
 
-		set_objective(
-			"Guide the Echo Orb through the waking archive."
-		)
+	set_objective(
+		"Kick each glowing rune directly. Follow the inscription for the order."
+	)
 
-		hud.show_message(
-			"THE ARCHIVE STIRS",
-			1.6
-		)
+	hud.show_message(
+		"THE ARCHIVE STIRS",
+		1.6
+	)
 
 
 func _rune_touched(id: String) -> void:
-	if (
-		completed
-		or failed
-		or runes_complete
-		or state_controller.state != GameState.GameMode.ACTIVE
-	):
+	if completed or failed or runes_complete:
+		return
+
+	# Directly kicking the first rune starts the same challenge flow as
+	# kicking the movable Echo Orb. The Echo Orb is now optional.
+	_begin_archive_challenge()
+
+	if state_controller.state != GameState.GameMode.ACTIVE:
 		return
 
 	if id == "EYE" and not cracked_wall.broken_once:
@@ -525,8 +536,7 @@ func _ear_awakened() -> void:
 	)
 
 	set_objective(
-		"The Warden hears your steps. "
-		+ "Seek what the second verse restores."
+		"The Warden hears. Reach the watcher rune and kick it directly."
 	)
 
 	warden.awaken_hearing()
@@ -540,7 +550,7 @@ func _eye_awakened() -> void:
 	)
 
 	set_objective(
-		"The Warden sees you now. Complete the final verse."
+		"The Warden sees. Reach the final rune and kick it directly."
 	)
 
 	warden.awaken_vision()
@@ -900,36 +910,43 @@ func _exit_entered(body: Node) -> void:
 
 
 func _build_echo_archive_background() -> void:
-	var texture_keys: Array[String] = [
-		"echo_archive_bg_01",
-		"echo_archive_bg_02",
-		"echo_archive_bg_03",
-		"echo_archive_bg_04",
+	var texture_paths: Array[String] = [
+		"res://assets/environment/echo_archive/echo_archive_bg_01.png",
+		"res://assets/environment/echo_archive/echo_archive_bg_02.png",
+		"res://assets/environment/echo_archive/echo_archive_bg_03.png",
+		"res://assets/environment/echo_archive/echo_archive_bg_04.png",
 	]
 
-	for index in range(texture_keys.size()):
-		var texture: Texture2D = AssetRegistry.load_texture(
-			texture_keys[index]
-		)
+	for index in range(texture_paths.size()):
+		var path: String = texture_paths[index]
+
+		if not ResourceLoader.exists(path, "Texture2D"):
+			push_warning("Missing Echo Archive background: " + path)
+			continue
+
+		var texture := ResourceLoader.load(
+			path,
+			"Texture2D"
+		) as Texture2D
 
 		if texture == null:
+			push_warning("Unable to load Echo Archive background: " + path)
 			continue
 
 		var sprite := Sprite2D.new()
-		sprite.name = (
-			"EchoArchiveBackground%02d"
-			% (index + 1)
-		)
+		sprite.name = "EchoArchiveBackground%02d" % (index + 1)
 		sprite.texture = texture
 		sprite.centered = true
 		sprite.position = Vector2(
 			960.0 + 1920.0 * float(index),
 			540.0
 		)
-		sprite.z_index = -40
+
+		# The default LevelManager background is at z = -30.
+		sprite.z_index = -29
+		sprite.z_as_relative = false
 
 		add_child(sprite)
-
 
 func _add_textured_floor(rect: Rect2) -> StaticBody2D:
 	var body: StaticBody2D = add_floor(

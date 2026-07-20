@@ -366,25 +366,43 @@ func on_time_expired() -> void:
 
 
 func _build_gear_hall_background() -> void:
-	var texture_keys := [
-		"gear_hall_bg_01",
-		"gear_hall_bg_02",
-		"gear_hall_bg_03",
+	var texture_paths: Array[String] = [
+		"res://assets/environment/gear_hall/gear_hall_bg_01.png",
+		"res://assets/environment/gear_hall/gear_hall_bg_02.png",
+		"res://assets/environment/gear_hall/gear_hall_bg_03.png",
 	]
 
-	for index in range(texture_keys.size()):
-		var texture := AssetRegistry.load_texture(texture_keys[index])
+	for index in range(texture_paths.size()):
+		var path: String = texture_paths[index]
+
+		if not ResourceLoader.exists(path, "Texture2D"):
+			push_warning("Missing Gear Hall background: " + path)
+			continue
+
+		var texture := ResourceLoader.load(
+			path,
+			"Texture2D"
+		) as Texture2D
+
 		if texture == null:
+			push_warning("Unable to load Gear Hall background: " + path)
 			continue
 
 		var sprite := Sprite2D.new()
 		sprite.name = "GearHallBackground%02d" % (index + 1)
 		sprite.texture = texture
 		sprite.centered = true
-		sprite.position = Vector2(960.0 + 1920.0 * index, 540.0)
-		sprite.z_index = -40
-		add_child(sprite)
+		sprite.position = Vector2(
+			960.0 + 1920.0 * float(index),
+			540.0
+		)
 
+		# LevelManager creates an opaque background at z = -30.
+		# Therefore this must be greater than -30 to remain visible.
+		sprite.z_index = -29
+		sprite.z_as_relative = false
+
+		add_child(sprite)
 
 func _add_textured_floor(rect: Rect2) -> StaticBody2D:
 	var body := add_floor(rect, Color(0.0, 0.0, 0.0, 0.0))

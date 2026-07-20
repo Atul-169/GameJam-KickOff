@@ -6,6 +6,7 @@ signal touched(rune_id: String)
 @export var rune_id := "EAR"
 @export var caption := "EAR"
 @export var accept_orb := true
+@export var accept_player_kick := false
 @export var accept_reflected_projectiles := true
 var solved := false
 var active_contacts: Dictionary = {}
@@ -54,6 +55,22 @@ func _area_entered(area: Area2D) -> void:
 
 func _area_exited(area: Area2D) -> void:
     active_contacts.erase(area.get_instance_id())
+
+func receive_kick(
+    _force: float,
+    _damage: int,
+    _direction: Vector2,
+    _charged: bool,
+    source: Node
+) -> void:
+    # Level 2/"Level 3" accessibility option: the player can activate
+    # a rune by standing beside it and kicking it directly. The moving
+    # Echo Orb remains usable, but it is no longer required.
+    if not accept_player_kick or solved:
+        return
+    if source == null or not source.is_in_group("player"):
+        return
+    touched.emit(rune_id)
 
 func _emit_contact_once(source: Object) -> void:
     var contact_id := source.get_instance_id()

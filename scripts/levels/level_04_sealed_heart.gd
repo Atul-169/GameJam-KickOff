@@ -96,6 +96,7 @@ func _exit_tree() -> void:
 	super._exit_tree()
 
 func build_level() -> void:
+	_build_sealed_heart_background()
 	add_label(
 		"I SPEAK WITHOUT A VOICE. I GUIDE WITHOUT A HAND.",
 		Vector2(140, 130),
@@ -824,3 +825,42 @@ func get_reflect_target() -> Vector2:
 	if keeper != null and is_instance_valid(keeper):
 		return keeper.global_position
 	return super.get_reflect_target()
+
+
+func _build_sealed_heart_background() -> void:
+	var texture_paths: Array[String] = [
+		"res://assets/environment/sealed_heart/sealed_heart_bg_01.png",
+		"res://assets/environment/sealed_heart/sealed_heart_bg_02.png",
+		"res://assets/environment/sealed_heart/sealed_heart_bg_03.png",
+	]
+
+	for index in range(texture_paths.size()):
+		var path: String = texture_paths[index]
+
+		if not ResourceLoader.exists(path, "Texture2D"):
+			push_warning("Missing Sealed Heart background: " + path)
+			continue
+
+		var texture := ResourceLoader.load(
+			path,
+			"Texture2D"
+		) as Texture2D
+
+		if texture == null:
+			push_warning("Unable to load Sealed Heart background: " + path)
+			continue
+
+		var sprite := Sprite2D.new()
+		sprite.name = "SealedHeartBackground%02d" % (index + 1)
+		sprite.texture = texture
+		sprite.centered = true
+		sprite.position = Vector2(
+			960.0 + 1920.0 * float(index),
+			540.0
+		)
+
+		# LevelManager's opaque background uses z = -30.
+		sprite.z_index = -29
+		sprite.z_as_relative = false
+
+		add_child(sprite)
