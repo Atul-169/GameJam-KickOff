@@ -257,6 +257,7 @@ func _physics_process(delta: float) -> void:
             if action_timer <= 0.0:
                 action = Action.IDLE
                 modulate = Color.WHITE
+                _restore_phase_label()
         Action.SCREAM_TELEGRAPH:
             velocity.x = 0.0
             if action_timer <= 0.0:
@@ -407,9 +408,32 @@ func _handle_collisions() -> void:
                 if target != null and is_instance_valid(target):
                     target._camera_shake(8.0)
                 return
-        if collider is StaticBody2D:
+        # move_and_slide() also reports the floor as a StaticBody2D.
+        # Only a SIDE collision should stop the horizontal charge.
+        # Previously the floor collision stunned the Warden immediately,
+        # so the label kept switching between CHARGE and STUNNED while
+        # the Warden appeared not to move.
+        var collision_normal := collision_data.get_normal()
+        var hit_side_wall := (
+            collider is StaticBody2D
+            and absf(collision_normal.x) > absf(collision_normal.y)
+        )
+        if hit_side_wall:
             _enter_stun(0.55)
             return
+
+func _restore_phase_label() -> void:
+    match awakening:
+        Awakening.HEARING:
+            phase_label.text = "HEARING"
+        Awakening.VISION:
+            phase_label.text = "VISION"
+        Awakening.VOICE:
+            phase_label.text = "FULLY AWAKE"
+        Awakening.DEFEATED:
+            phase_label.text = "SILENCED"
+        _:
+            phase_label.text = "DORMANT"
 
 func _on_player_kicked(
     _charged: bool, origin: Vector2, _direction: Vector2
