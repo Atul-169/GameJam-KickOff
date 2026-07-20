@@ -30,22 +30,9 @@ func _ready() -> void:
 	kick_receiver.add_child(kick_shape_node)
 	add_child(kick_receiver)
 
-	var ring := Line2D.new()
-	ring.width = 12.0
-	ring.default_color = Color("65c8d6")
-	var points := PackedVector2Array()
-	for i in 33:
-		points.append(Vector2.from_angle(float(i) / 32.0 * TAU) * 92.0)
-	ring.points = points
-	add_child(ring)
 
-	var label := Label.new()
-	label.text = "ANCIENT SEAL"
-	label.position = Vector2(-110, -15)
-	label.size = Vector2(220, 30)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 18)
-	add_child(label)
+
+
 
 	_initial_enabled = enabled
 	_initial_interaction_enabled = interaction_enabled

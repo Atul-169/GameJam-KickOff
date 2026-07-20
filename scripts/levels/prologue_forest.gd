@@ -24,7 +24,7 @@ const FOOTBALL_GROUND_Y := GROUND_Y - 23.0
 const SEAL_X := 3100.0
 const NIKO_FALL_X_OFFSET := 10.0
 const BALL_FOREST_X := SEAL_X + NIKO_FALL_X_OFFSET
-
+const BALL_ON_SEAL_Y := FOOTBALL_GROUND_Y - 25.0
 var niko: NikoCharacter
 var football: Football
 
@@ -192,7 +192,7 @@ func _run_intro_cinematic(token: int) -> void:
 	var ball_start := football.global_position
 	var ball_end := Vector2(
 		BALL_FOREST_X,
-		FOOTBALL_GROUND_Y
+		BALL_ON_SEAL_Y
 	)
 
 	# এই point যত উপরে যাবে, ball তত উঁচু arc করবে।
@@ -236,7 +236,7 @@ func _run_intro_cinematic(token: int) -> void:
 		return
 
 	# The ball is explicitly grounded when the arc finishes.
-	football.global_position.y = FOOTBALL_GROUND_Y
+	football.global_position.y = BALL_ON_SEAL_Y
 	player.sprite.play("idle")
 
 	dialogue_ok = await hud.show_dialogue_sequence(
@@ -295,7 +295,7 @@ func _run_intro_cinematic(token: int) -> void:
 	niko.global_position.y = GROUND_Y
 	football.global_position = Vector2(
 		BALL_FOREST_X,
-		FOOTBALL_GROUND_Y
+		BALL_ON_SEAL_Y
 	)
 
 	player.sprite.play("idle")
@@ -360,16 +360,20 @@ func _run_intro_cinematic(token: int) -> void:
 	var tunnel_position := tunnel_point.global_position
 	var original_niko_scale := niko.scale
 
+	# Niko-কে seal-এর exact horizontal centre-এ বসানো।
+	# এরপর শুধু Y position change হবে, তাই fall পুরো vertical হবে।
+	niko.global_position.x = tunnel_position.x
+
 	niko.play_state("fall")
 	niko.z_index = 51
 	niko.modulate = Color.WHITE
 
-	# Niko-কে tunnel-এর মুখের মাঝখানে নেওয়া।
+	# Niko শুধু vertically tunnel opening-এর কাছে নামবে।
 	var move_to_tunnel := create_tween()
 	move_to_tunnel.tween_property(
 		niko,
-		"global_position",
-		tunnel_position,
+		"global_position:y",
+		tunnel_position.y,
 		0.28
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
@@ -378,14 +382,13 @@ func _run_intro_cinematic(token: int) -> void:
 	if not _cinematic_valid(token):
 		return
 
-	# প্রথমে opening-এর সামনে থাকবে।
-	# Hole-এর ভেতরে ঢুকলে seal-এর পিছনে চলে যাবে।
+	# Tunnel-এর মধ্যে সম্পূর্ণ vertical fall।
 	var niko_fall := create_tween()
 
 	niko_fall.tween_property(
 		niko,
-		"global_position",
-		tunnel_position + Vector2(0.0, 25.0),
+		"global_position:y",
+		tunnel_position.y + 25.0,
 		0.18
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
@@ -396,8 +399,8 @@ func _run_intro_cinematic(token: int) -> void:
 
 	niko_fall.tween_property(
 		niko,
-		"global_position",
-		tunnel_position + Vector2(0.0, 220.0),
+		"global_position:y",
+		tunnel_position.y + 220.0,
 		0.65
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
@@ -433,7 +436,7 @@ func _run_intro_cinematic(token: int) -> void:
 	niko.modulate = Color.WHITE
 	niko.z_index = 0
 
-	football.global_position.y = FOOTBALL_GROUND_Y
+	football.global_position.y = BALL_ON_SEAL_Y
 
 	# --------------------------------------------------------------
 	# SHOT 6: Arin runs to the grounded seal and fails by hand
@@ -477,9 +480,9 @@ func _run_intro_cinematic(token: int) -> void:
 
 	astra_visual = AssetRegistry.make_visual(
 		"astra",
-		Vector2(70.0, 90.0),
-		Color("4de3ff"),
-        "ASTRA"
+		Vector2(90.0, 110.0),
+		Color.WHITE,
+        ""
 	)
 	astra_visual.global_position = Vector2(SEAL_X + 125.0, 690.0)
 	astra_visual.modulate.a = 0.0
@@ -656,7 +659,11 @@ func _seal_kicked() -> void:
 func _finish_seal_opening() -> void:
 	if not is_inside_tree() or completed:
 		return
+
 	if seal == null or not is_instance_valid(seal):
+		return
+
+	if player == null or not is_instance_valid(player):
 		return
 
 	seal.disable_detection_keep_visible()
@@ -668,43 +675,106 @@ func _finish_seal_opening() -> void:
 	hud.set_world_state(false)
 	set_objective("")
 
-	var entrance := Polygon2D.new()
-	entrance.name = "UndergroundEntrance"
-	entrance.polygon = PackedVector2Array([
-		Vector2(-110.0, -20.0),
-		Vector2(110.0, -20.0),
-		Vector2(155.0, 110.0),
-		Vector2(-155.0, 110.0),
-	])
-	entrance.color = Color("071018")
-	entrance.global_position = seal.global_position
-	entrance.z_index = -1
-	add_child(entrance)
+	# Kick করার সঙ্গে সঙ্গে closed seal-এর জায়গায় open seal দেখাবে।
+	seal_visual.texture = SEAL_OPEN_TEXTURE
+	seal_visual.visible = true
+	seal_visual.modulate = Color.WHITE
+	seal.modulate = Color.WHITE
 
 	AudioManager.play_sfx("kickoff_sfx")
 	hud.show_message("KICKOFF!", 1.2)
 
-	var seal_fade := create_tween()
-	seal_fade.tween_property(seal, "modulate:a", 0.0, 0.55)
-	await seal_fade.finished
+	# Kick animation-টা অল্প সময় শেষ হতে দেওয়া।
+	player.lock_input()
+	player.velocity = Vector2.ZERO
+
+	await get_tree().create_timer(0.18).timeout
 
 	if not is_inside_tree() or completed:
 		return
 
-	var dialogue_ok := await hud.show_dialogue_sequence(
-		[
-			{
-				"speaker": "ARIN",
-				"text": "Niko, hold on. I'm coming.",
-				"duration": 2.0,
-			},
-		],
-		true
-	)
+	# Arin-এর normal physics বন্ধ করে cinematic control নেওয়া।
+	player.set_cinematic_control(true)
+	player.modulate = Color.WHITE
+	player.visible = true
+	player.z_index = 51
 
-	if dialogue_ok and is_inside_tree() and not completed:
-		sequence_state = SequenceState.COMPLETED
-		complete_level()
+	var tunnel_position := tunnel_point.global_position
+	var original_player_scale := player.scale
+
+	# Arin প্রথমে open seal-এর horizontal centre-এ যাবে।
+	# শুধু X change হবে, তাই diagonally নিচে যাবে না।
+	player.play_cinematic_animation("run")
+
+	var move_to_seal := create_tween()
+	move_to_seal.tween_property(
+		player,
+		"global_position:x",
+		tunnel_position.x,
+		0.35
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	await move_to_seal.finished
+
+	if not is_inside_tree() or completed:
+		return
+
+	# Fall শুরু হওয়ার আগে X exact centre-এ lock করা।
+	player.global_position.x = tunnel_position.x
+	player.play_cinematic_animation("fall")
+
+	# Open seal-এর মুখ পর্যন্ত vertical movement।
+	var enter_tunnel := create_tween()
+	enter_tunnel.tween_property(
+		player,
+		"global_position:y",
+		tunnel_position.y + 25.0,
+		0.22
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	await enter_tunnel.finished
+
+	if not is_inside_tree() or completed:
+		return
+
+	# এখন Arin seal sprite-এর পিছনে চলে যাবে।
+	player.z_index = 39
+
+	# সম্পূর্ণ vertically tunnel-এর নিচে পড়বে।
+	var player_fall := create_tween()
+
+	player_fall.tween_property(
+		player,
+		"global_position:y",
+		tunnel_position.y + 280.0,
+		0.70
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	player_fall.parallel().tween_property(
+		player,
+		"scale",
+		original_player_scale * 0.35,
+		0.70
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	player_fall.parallel().tween_property(
+		player,
+		"modulate:a",
+		0.0,
+		0.55
+	).set_delay(0.10)
+
+	await player_fall.finished
+
+	if not is_inside_tree() or completed:
+		return
+
+	# complete_level() victory animation চালালেও Arin invisible থাকবে।
+	# তাই হাত তুলে দাঁড়ানোর pose দেখা যাবে না।
+	player.visible = false
+
+	sequence_state = SequenceState.COMPLETED
+	complete_level()
 
 
 func _forest_art() -> void:
