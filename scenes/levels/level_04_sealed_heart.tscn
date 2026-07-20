@@ -1,4 +1,6 @@
-[gd_scene load_steps=2 format=3]
-[ext_resource path="res://scripts/levels/level_04_sealed_heart.gd" type="Script" id="1"]
-[node name="SealedHeart" type="Node2D"]
+[gd_scene format=3 uid="uid://1jwjpwlk34et"]
+
+[ext_resource type="Script" uid="uid://dgqpnd2pwlb0" path="res://scripts/levels/level_04_sealed_heart.gd" id="1"]
+
+[node name="SealedHeart" type="Node2D" unique_id=1597055317]
 script = ExtResource("1")
