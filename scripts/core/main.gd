@@ -92,6 +92,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		and not results_open
 		and not transition_in_progress
 		and not current_level.completed
+		and not GameState.dialogue_active
 	):
 		get_viewport().set_input_as_handled()
 

@@ -1,10 +1,8 @@
 class_name MainMenu
 extends Control
 
-
 signal start_requested
 signal level_requested(index: int)
-
 
 var page: Control
 
@@ -34,10 +32,7 @@ func _base_panel() -> VBoxContainer:
 	page = shade
 
 	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override(
-		"panel",
-		UIFactory.panel_style()
-	)
+	panel.add_theme_stylebox_override("panel", UIFactory.panel_style())
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.position = Vector2(-270.0, -390.0)
 	panel.size = Vector2(540.0, 780.0)
@@ -64,21 +59,10 @@ func _show_home() -> void:
 		logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		box.add_child(logo)
 	else:
-		box.add_child(
-			UIFactory.make_title(
-				"THE FIRST KICK",
-				58
-			)
-		)
+		box.add_child(UIFactory.make_title("THE FIRST KICK", 58))
 
-		var subtitle := UIFactory.make_title(
-			"ECHOES BENEATH",
-			28
-		)
-		subtitle.add_theme_color_override(
-			"font_color",
-			Color("76c7d7")
-		)
+		var subtitle := UIFactory.make_title("ECHOES BENEATH", 28)
+		subtitle.add_theme_color_override("font_color", Color("76c7d7"))
 		box.add_child(subtitle)
 
 	var line := Label.new()
@@ -112,14 +96,9 @@ func _show_home() -> void:
 
 	if OS.has_feature("web"):
 		exit_button.disabled = true
-		exit_button.tooltip_text = (
-			"Browser builds are closed from the browser tab."
-		)
+		exit_button.tooltip_text = ("Browser builds are closed from the browser tab.")
 	else:
-		exit_button.pressed.connect(
-			func() -> void:
-				get_tree().quit()
-		)
+		exit_button.pressed.connect(func() -> void: get_tree().quit())
 
 	box.add_child(exit_button)
 
@@ -127,66 +106,33 @@ func _show_home() -> void:
 func _show_level_select() -> void:
 	var box := _base_panel()
 
-	box.add_child(
-		UIFactory.make_title(
-			"LEVEL SELECT",
-			44
-		)
-	)
+	box.add_child(UIFactory.make_title("LEVEL SELECT", 44))
 
 	var description := Label.new()
-	description.text = (
-		"Choose any stage and play it directly."
-	)
+	description.text = ("Choose any stage and play it directly.")
 	description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description.add_theme_font_size_override("font_size", 18)
 	box.add_child(description)
 
-	_add_level_button(
-		box,
-		"Level 1 — Prologue Forest",
-		0
-	)
+	_add_level_button(box, "Level 1 — Prologue Forest", 0)
 
-	_add_level_button(
-		box,
-		"Level 2 — Hall of Still Gears",
-		1
-	)
+	_add_level_button(box, "Level 2 — Hall of Still Gears", 1)
 
-	_add_level_button(
-		box,
-		"Level 3 — Archive of Echoes",
-		2
-	)
+	_add_level_button(box, "Level 3 — Archive of Echoes", 2)
 
-	_add_level_button(
-		box,
-		"Level 4 — Guardian Court",
-		3
-	)
+	_add_level_button(box, "Level 4 — Guardian Court", 3)
 
-	_add_level_button(
-		box,
-		"Level 5 — The Sealed Heart",
-		4
-	)
+	_add_level_button(box, "Level 5 — The Sealed Heart", 4)
 
 	var back := UIFactory.make_button("Back")
 	back.pressed.connect(_show_home)
 	box.add_child(back)
 
 
-func _add_level_button(
-	box: VBoxContainer,
-	title: String,
-	index: int
-) -> void:
+func _add_level_button(box: VBoxContainer, title: String, index: int) -> void:
 	var button := UIFactory.make_button(title)
-	button.pressed.connect(
-		_request_level.bind(index)
-	)
+	button.pressed.connect(_request_level.bind(index))
 	box.add_child(button)
 
 
@@ -201,17 +147,12 @@ func _start() -> void:
 func _how() -> void:
 	var box := _base_panel()
 
-	box.add_child(
-		UIFactory.make_title(
-			"HOW TO PLAY",
-			44
-		)
-	)
+	box.add_child(UIFactory.make_title("HOW TO PLAY", 44))
 
 	var text := Label.new()
 	text.text = (
 		"Move with A and D.\n"
-		+ "Jump with Space.\n"
+		+ "Jump with Space and leap over low attacks.\n"
 		+ "Kick with J or Left Mouse.\n"
 		+ "Charge a kick with K or Right Mouse.\n"
 		+ "Throw a limited star with I.\n"
@@ -232,12 +173,7 @@ func _how() -> void:
 func _settings() -> void:
 	var box := _base_panel()
 
-	box.add_child(
-		UIFactory.make_title(
-			"SETTINGS",
-			44
-		)
-	)
+	box.add_child(UIFactory.make_title("SETTINGS", 44))
 
 	_add_settings_controls(box)
 
@@ -249,12 +185,7 @@ func _settings() -> void:
 func _credits() -> void:
 	var box := _base_panel()
 
-	box.add_child(
-		UIFactory.make_title(
-			"CREDITS",
-			44
-		)
-	)
+	box.add_child(UIFactory.make_title("CREDITS", 44))
 
 	var text := Label.new()
 	text.text = (
@@ -285,9 +216,7 @@ func _add_settings_controls(box: VBoxContainer) -> void:
 	music.step = 0.01
 	music.value = AudioManager.music_volume
 	music.custom_minimum_size = Vector2(410.0, 40.0)
-	music.value_changed.connect(
-		AudioManager.set_music_volume
-	)
+	music.value_changed.connect(AudioManager.set_music_volume)
 	box.add_child(music)
 
 	var sfx_label := Label.new()
@@ -301,19 +230,14 @@ func _add_settings_controls(box: VBoxContainer) -> void:
 	sfx.step = 0.01
 	sfx.value = AudioManager.sfx_volume
 	sfx.custom_minimum_size = Vector2(410.0, 40.0)
-	sfx.value_changed.connect(
-		AudioManager.set_sfx_volume
-	)
+	sfx.value_changed.connect(AudioManager.set_sfx_volume)
 	box.add_child(sfx)
 
 	var fullscreen := CheckButton.new()
 	fullscreen.text = "Fullscreen"
 	fullscreen.button_pressed = (
-		DisplayServer.window_get_mode()
-		== DisplayServer.WINDOW_MODE_FULLSCREEN
+		DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	)
 	fullscreen.add_theme_font_size_override("font_size", 22)
-	fullscreen.toggled.connect(
-		AudioManager.set_fullscreen
-	)
+	fullscreen.toggled.connect(AudioManager.set_fullscreen)
 	box.add_child(fullscreen)

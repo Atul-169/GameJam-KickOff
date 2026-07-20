@@ -14,6 +14,7 @@ var cracked_route_cost_paid := false
 
 var lift: ShortcutLift
 var cracked_route_zone: Area2D
+var shortcut_enemy: ShortcutStoneThrower
 
 
 func _init() -> void:
@@ -38,17 +39,12 @@ func build_level() -> void:
 	_add_textured_wall(Vector2(1080, 1210), Vector2(40, 220))
 	_add_textured_wall(Vector2(3620, 1210), Vector2(40, 220))
 
-	add_label(
-		"THE PATH EXISTS ONLY WHILE THE HEART TURNS.",
-		Vector2(150, 180),
-		28,
-		Color("9acbd3")
-	)
+	add_label("THE PATH EXISTS ONLY WHILE THE HEART TURNS.", Vector2(150, 180), 28, Color("9acbd3"))
 
-	var pedestal := spawn_scene(
-		"res://scenes/interactables/kick_trigger.tscn",
-		Vector2(520, 810)
-	) as KickTrigger
+	var pedestal := (
+		spawn_scene("res://scenes/interactables/kick_trigger.tscn", Vector2(520, 810))
+		as KickTrigger
+	)
 	pedestal.trigger_id = "gear_pedestal"
 	pedestal.asset_key = "gear_pedestal"
 	pedestal.caption = "GEAR PEDESTAL"
@@ -56,17 +52,16 @@ func build_level() -> void:
 
 	_add_textured_floor(Rect2(735, 810, 180, 90))
 
-	var p1 := spawn_scene(
-		"res://scenes/environment/moving_platform.tscn",
-		Vector2(1010, 760)
-	) as MovingPlatform
+	var p1 := (
+		spawn_scene("res://scenes/environment/moving_platform.tscn", Vector2(1010, 760))
+		as MovingPlatform
+	)
 	p1.offset = Vector2(650, 0)
 	p1.travel_time = 2.7
 
-	var weak := spawn_scene(
-		"res://scenes/hazards/weak_platform.tscn",
-		Vector2(1460, 875)
-	) as WeakPlatform
+	var weak := (
+		spawn_scene("res://scenes/hazards/weak_platform.tscn", Vector2(1460, 875)) as WeakPlatform
+	)
 
 	# Invisible range directly below the cracked platform.
 	# Entering this range from the upper route costs exactly one health.
@@ -88,63 +83,60 @@ func build_level() -> void:
 
 	add_label("WEAK ROUTE", Vector2(1380, 805), 18, Color("d9a37f"))
 
-	spawn_scene(
-		"res://scenes/hazards/rotating_gear.tscn",
-		Vector2(1850, 795)
-	)
-	spawn_scene(
-		"res://scenes/hazards/rotating_gear.tscn",
-		Vector2(2090, 690)
-	)
+	spawn_scene("res://scenes/hazards/rotating_gear.tscn", Vector2(1850, 795))
+	spawn_scene("res://scenes/hazards/rotating_gear.tscn", Vector2(2090, 690))
 
-	var p2 := spawn_scene(
-		"res://scenes/environment/moving_platform.tscn",
-		Vector2(2450, 820)
-	) as MovingPlatform
+	var p2 := (
+		spawn_scene("res://scenes/environment/moving_platform.tscn", Vector2(2450, 820))
+		as MovingPlatform
+	)
 	p2.offset = Vector2(0, -270)
 	p2.travel_time = 2.0
 
 	_add_textured_wall(Vector2(2700, 770), Vector2(170, 260))
 
-	var rock1 := spawn_scene(
-		"res://scenes/hazards/falling_rock.tscn",
-		Vector2(2970, 250)
-	) as FallingRock
+	var rock1 := (
+		spawn_scene("res://scenes/hazards/falling_rock.tscn", Vector2(2970, 250)) as FallingRock
+	)
 	rock1.fall_distance = 620
 
-	var rock2 := spawn_scene(
-		"res://scenes/hazards/falling_rock.tscn",
-		Vector2(3210, 220)
-	) as FallingRock
+	var rock2 := (
+		spawn_scene("res://scenes/hazards/falling_rock.tscn", Vector2(3210, 220)) as FallingRock
+	)
 	rock2.fall_distance = 650
 
-	relay = spawn_scene(
-		"res://scenes/interactables/time_relay.tscn",
-		Vector2(3650, 800)
-	) as KickTrigger
+	relay = (
+		spawn_scene("res://scenes/interactables/time_relay.tscn", Vector2(3650, 800)) as KickTrigger
+	)
 	relay.kicked.connect(_relay_kicked)
 
 	# Switch A is inside the lower route.
-	switch_a = spawn_scene(
-		"res://scenes/interactables/kick_switch.tscn",
-		Vector2(1800, 1230)
-	) as KickTrigger
+	switch_a = (
+		spawn_scene("res://scenes/interactables/kick_switch.tscn", Vector2(1800, 1230))
+		as KickTrigger
+	)
 	switch_a.trigger_id = "switch_A"
 	switch_a.caption = "SWITCH A"
 	switch_a.active_color = Color("7effb2")
 	switch_a.kicked.connect(_switch_a_kicked)
 
+	# A large stationary guard protects the lower shortcut. It throws one
+	# low horizontal stone at a time, so Arin can jump over each attack.
+	shortcut_enemy = (
+		spawn_scene("res://scenes/enemies/shortcut_stone_thrower.tscn", Vector2(2860, 1320))
+		as ShortcutStoneThrower
+	)
+	add_label("JUMP OVER STONES • ONE KICK DEFEATS IT", Vector2(2180, 1135), 18, Color("ffd071"))
+
 	# The lift is placed before Switch B because B must move with the lift.
-	lift = spawn_scene(
-		"res://scenes/environment/shortcut_lift.tscn",
-		Vector2(3400, 1295)
-	) as ShortcutLift
+	lift = (
+		spawn_scene("res://scenes/environment/shortcut_lift.tscn", Vector2(3400, 1295))
+		as ShortcutLift
+	)
 	lift.rise_offset = Vector2(0, -430)
 
 	# Switch B is a child of the lift, so it travels upward with it.
-	var switch_scene := load(
-        "res://scenes/interactables/kick_switch.tscn"
-	) as PackedScene
+	var switch_scene := load("res://scenes/interactables/kick_switch.tscn") as PackedScene
 	switch_b = switch_scene.instantiate() as KickTrigger
 	switch_b.position = Vector2(55, -70)
 	switch_b.trigger_id = "switch_B"
@@ -158,10 +150,7 @@ func build_level() -> void:
 	switch_b.monitorable = false
 	switch_b.modulate = Color("666b75")
 
-	gate = spawn_scene(
-		"res://scenes/interactables/exit_gate.tscn",
-		Vector2(4080, 455)
-	) as ExitGate
+	gate = spawn_scene("res://scenes/interactables/exit_gate.tscn", Vector2(4080, 455)) as ExitGate
 	gate.configure_height(390.0)
 
 	var exit := add_exit(Vector2(4250, 770), Vector2(150, 260))
@@ -169,22 +158,29 @@ func build_level() -> void:
 
 
 func post_ready() -> void:
+	if shortcut_enemy != null and is_instance_valid(shortcut_enemy):
+		shortcut_enemy.set_target(player)
+		shortcut_enemy.defeated.connect(_shortcut_enemy_defeated)
 	set_objective("Kick the Gear Pedestal.")
 	EventBus.dialogue_requested.emit(
-		"ASTRA MAP",
-		"The path exists only while the heart turns.",
-		2.8
+		"ASTRA MAP", "The path exists only while the heart turns.", 2.8
 	)
 
 
 func _kickoff(_charged: bool) -> void:
-	start_kickoff(30.0)
+	start_kickoff(23.0)
 	set_objective("Reach the exit before time expires.")
+	hud.show_message("SHORTCUT: HOLD S TO DUCK UNDER STONES", 2.4)
 
 
 func timer_tick(value: float) -> void:
 	if gate != null:
 		gate.set_closure(1.0 - value / initial_timer)
+
+
+func _shortcut_enemy_defeated(_enemy: EnemyBase) -> void:
+	if hud != null and is_instance_valid(hud):
+		hud.show_message("SHORTCUT GUARD DEFEATED", 1.4)
 
 
 func _relay_kicked(_charged: bool) -> void:
@@ -338,20 +334,23 @@ func _exit_entered(body: Node) -> void:
 	set_restart_blocked(true)
 	timer_running = false
 
-	var dialogue_completed := await hud.show_dialogue_sequence(
-		[
-			{
-				"speaker": "ASTRA MAP",
-				"text": "One motion reclaimed. Three remain.",
-				"duration": 2.2,
-			},
-			{
-				"speaker": "ARIN",
-				"text": "Niko, hold on. I'm coming.",
-				"duration": 2.0,
-			},
-		],
-		true
+	var dialogue_completed := await (
+		hud
+		. show_dialogue_sequence(
+			[
+				{
+					"speaker": "ASTRA MAP",
+					"text": "One motion reclaimed. Three remain.",
+					"duration": 2.2,
+				},
+				{
+					"speaker": "ARIN",
+					"text": "Niko, hold on. I'm coming.",
+					"duration": 2.0,
+				},
+			],
+			true
+		)
 	)
 
 	if dialogue_completed and is_inside_tree() and not completed:
@@ -379,10 +378,7 @@ func _build_gear_hall_background() -> void:
 			push_warning("Missing Gear Hall background: " + path)
 			continue
 
-		var texture := ResourceLoader.load(
-			path,
-			"Texture2D"
-		) as Texture2D
+		var texture := ResourceLoader.load(path, "Texture2D") as Texture2D
 
 		if texture == null:
 			push_warning("Unable to load Gear Hall background: " + path)
@@ -392,10 +388,7 @@ func _build_gear_hall_background() -> void:
 		sprite.name = "GearHallBackground%02d" % (index + 1)
 		sprite.texture = texture
 		sprite.centered = true
-		sprite.position = Vector2(
-			960.0 + 1920.0 * float(index),
-			540.0
-		)
+		sprite.position = Vector2(960.0 + 1920.0 * float(index), 540.0)
 
 		# LevelManager creates an opaque background at z = -30.
 		# Therefore this must be greater than -30 to remain visible.
@@ -403,6 +396,7 @@ func _build_gear_hall_background() -> void:
 		sprite.z_as_relative = false
 
 		add_child(sprite)
+
 
 func _add_textured_floor(rect: Rect2) -> StaticBody2D:
 	var body := add_floor(rect, Color(0.0, 0.0, 0.0, 0.0))

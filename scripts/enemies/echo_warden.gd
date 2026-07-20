@@ -24,7 +24,18 @@ const CORE_MAX_HEALTH := 3
 
 @export var move_speed := 115.0
 
-# Hearing uses a slower and more readable charge.
+# In the Hearing phase the Warden follows Arin while A/D is held.
+# It stays slower than Arin (Arin MOVE_SPEED = 260).
+@export var hearing_chase_speed := 190.0
+@export var hearing_range := 5000.0
+@export var hearing_jump_velocity := -540.0
+@export var hearing_stop_distance := 42.0
+@export var hearing_target_above_threshold := 45.0
+# Time the Warden keeps its previous direction after Arin crosses behind it.
+@export var hearing_reaction_delay := 1.10
+# Prevents a one-frame D -> A key transition from cancelling the chase.
+@export var hearing_input_memory := 0.18
+# Kept for any explicitly scripted charge used elsewhere.
 @export var hearing_charge_speed := 225.0
 
 # Vision and Voice keep the stronger boss charge.
@@ -50,6 +61,12 @@ var last_sound_position := Vector2.ZERO
 var sound_memory := 0.0
 var sound_scan_timer := 0.0
 var hearing_cooldown := 0.0
+var hearing_chase_active := false
+var hearing_locked_direction := 0.0
+var hearing_pending_direction := 0.0
+var hearing_reaction_timer := 0.0
+var hearing_input_memory_timer := 0.0
+var contact_damage_cooldown := 0.0
 var projectile_timer := 1.2
 var scream_timer := 2.0
 var enrage_timer := 0.0
@@ -151,6 +168,12 @@ func awaken_hearing() -> void:
 	visual_root.modulate = Color("9aa5b8")
 
 	hearing_cooldown = 0.0
+	hearing_chase_active = false
+	hearing_locked_direction = 0.0
+	hearing_pending_direction = 0.0
+	hearing_reaction_timer = 0.0
+	hearing_input_memory_timer = 0.0
+	contact_damage_cooldown = 0.0
 	sound_scan_timer = 0.0
 	sound_memory = 0.0
 
@@ -295,6 +318,12 @@ func reset_state() -> void:
 	sound_memory = 0.0
 	sound_scan_timer = 0.0
 	hearing_cooldown = 0.0
+	hearing_chase_active = false
+	hearing_locked_direction = 0.0
+	hearing_pending_direction = 0.0
+	hearing_reaction_timer = 0.0
+	hearing_input_memory_timer = 0.0
+	contact_damage_cooldown = 0.0
 	projectile_timer = 1.2
 	scream_timer = 2.0
 	enrage_timer = 0.0
@@ -348,11 +377,9 @@ func _physics_process(delta: float) -> void:
 				_enter_stun(0.45)
 		Action.STUNNED:
 			velocity.x = move_toward(velocity.x, 0.0, 1200.0 * delta)
-
 			if action_timer <= 0.0:
 				action = Action.IDLE
 				modulate = Color.WHITE
-
 				match awakening:
 					Awakening.HEARING:
 						phase_label.text = "HEARING"
@@ -374,6 +401,7 @@ func _physics_process(delta: float) -> void:
 				action = Action.IDLE
 				scream_timer = 1.6
 	move_and_slide()
+	_handle_hearing_chase_collisions()
 	_handle_collisions()
 	global_position.x = clampf(
 		global_position.x,
@@ -391,6 +419,15 @@ func _physics_process(delta: float) -> void:
 func _update_timers(delta: float) -> void:
 	action_timer = maxf(action_timer - delta, 0.0)
 	hearing_cooldown = maxf(hearing_cooldown - delta, 0.0)
+	hearing_reaction_timer = maxf(
+		hearing_reaction_timer - delta,
+		0.0
+	)
+	hearing_input_memory_timer = maxf(
+		hearing_input_memory_timer - delta,
+		0.0
+	)
+	contact_damage_cooldown = maxf(contact_damage_cooldown - delta, 0.0)
 	projectile_timer = maxf(projectile_timer - delta, 0.0)
 	scream_timer = maxf(scream_timer - delta, 0.0)
 	sound_memory = maxf(sound_memory - delta, 0.0)
@@ -400,43 +437,72 @@ func _update_timers(delta: float) -> void:
 
 func _listen_for_movement(delta: float) -> void:
 	if target == null or not is_instance_valid(target):
+		hearing_chase_active = false
+		hearing_input_memory_timer = 0.0
 		return
 
 	if awakening < Awakening.HEARING:
+		hearing_chase_active = false
+		hearing_input_memory_timer = 0.0
 		return
 
-	sound_scan_timer = maxf(
-		sound_scan_timer - delta,
-		0.0
-	)
+	sound_scan_timer = maxf(sound_scan_timer - delta, 0.0)
 
-	# Arin's MOVE_SPEED is 260. Any deliberate running, jumping,
-	# landing or kicking should be audible to the Hearing phase.
+	# HEARING: A/D movement creates sound. A tiny memory window prevents
+	# the chase from stopping during the one-frame transition from D to A.
+	if awakening == Awakening.HEARING:
+		var movement_key_held := (
+			Input.is_action_pressed("move_left")
+			or Input.is_action_pressed("move_right")
+		)
+		var inside_hearing_range := (
+			global_position.distance_to(target.global_position)
+			<= hearing_range
+		)
+
+		if movement_key_held and inside_hearing_range:
+			hearing_chase_active = true
+			hearing_input_memory_timer = hearing_input_memory
+			last_sound_position = target.global_position
+			sound_memory = 0.15
+		elif hearing_input_memory_timer > 0.0 and inside_hearing_range:
+			hearing_chase_active = true
+		else:
+			hearing_chase_active = false
+			sound_memory = 0.0
+
+		return
+
+	# VISION/VOICE retain the older sound-memory charge behaviour.
 	var horizontal_noise := absf(target.velocity.x) > 25.0
 	var air_noise := not target.is_on_floor()
 	var noisy := horizontal_noise or air_noise
 
 	if noisy and sound_scan_timer <= 0.0:
-		notify_sound(
-			target.global_position,
-			0.55
-		)
-
+		notify_sound(target.global_position, 0.55)
 		sound_scan_timer = 0.18
 
 func _think_idle() -> void:
 	if target == null or not is_instance_valid(target):
 		velocity.x = 0.0
+		hearing_chase_active = false
 		return
+
+	if awakening == Awakening.HEARING:
+		_think_hearing_chase()
+		return
+
 	if awakening == Awakening.VOICE and scream_timer <= 0.0:
 		action = Action.SCREAM_TELEGRAPH
 		action_timer = 0.75
 		modulate = Color("c596ff")
 		phase_label.text = "SCREAM CHARGING"
 		return
+
 	if sound_memory > 0.0 and hearing_cooldown <= 0.0:
 		_begin_charge(last_sound_position)
 		return
+
 	if awakening >= Awakening.VISION:
 		facing = signf(target.global_position.x - global_position.x)
 		if absf(target.global_position.x - global_position.x) > 210.0:
@@ -452,6 +518,76 @@ func _think_idle() -> void:
 			)
 	else:
 		velocity.x = 0.0
+
+
+func _think_hearing_chase() -> void:
+	if not hearing_chase_active:
+		velocity.x = 0.0
+		hearing_locked_direction = 0.0
+		hearing_pending_direction = 0.0
+		hearing_reaction_timer = 0.0
+		phase_label.text = "HEARING"
+		return
+
+	var offset := target.global_position - global_position
+	var desired_direction := signf(offset.x)
+
+	if is_zero_approx(desired_direction):
+		desired_direction = (
+			hearing_locked_direction
+			if not is_zero_approx(hearing_locked_direction)
+			else facing
+		)
+
+	# Start the chase in Arin's current direction.
+	if is_zero_approx(hearing_locked_direction):
+		hearing_locked_direction = desired_direction
+		hearing_pending_direction = 0.0
+		hearing_reaction_timer = 0.0
+
+	# Arin crossed behind the Warden. Keep the old direction for a while
+	# so the Warden can overshoot and crash into the cracked wall.
+	elif desired_direction != hearing_locked_direction:
+		if hearing_pending_direction != desired_direction:
+			hearing_pending_direction = desired_direction
+			hearing_reaction_timer = hearing_reaction_delay
+		elif hearing_reaction_timer <= 0.0:
+			hearing_locked_direction = hearing_pending_direction
+			hearing_pending_direction = 0.0
+			hearing_reaction_timer = 0.0
+
+	# Arin returned to the original side before the delay ended.
+	else:
+		hearing_pending_direction = 0.0
+		hearing_reaction_timer = 0.0
+
+	facing = hearing_locked_direction
+
+	# Stop close to Arin only during an ordinary same-side chase.
+	# During a pending turn, preserve momentum in the old direction.
+	var waiting_near_target := (
+		desired_direction == hearing_locked_direction
+		and is_zero_approx(hearing_pending_direction)
+		and absf(offset.x) <= hearing_stop_distance
+	)
+
+	if waiting_near_target:
+		velocity.x = 0.0
+	else:
+		velocity.x = (
+			hearing_locked_direction
+			* hearing_chase_speed
+			* _enrage_multiplier()
+		)
+
+	phase_label.text = (
+		"MOMENTUM"
+		if not is_zero_approx(hearing_pending_direction)
+		else "TRACKING"
+	)
+
+	# Do not copy Arin's jump. The Warden jumps only when its own body
+	# collides with the side of a real wall or platform.
 
 func _begin_charge(sound_position: Vector2) -> void:
 	charge_direction = signf(
@@ -513,6 +649,65 @@ func _set_core_exposed(active: bool, duration: float = 0.0) -> void:
 	elif awakening == Awakening.VOICE:
 		phase_label.text = "FULLY AWAKE"
 
+func _handle_hearing_chase_collisions() -> void:
+	if (
+		awakening != Awakening.HEARING
+		or action != Action.IDLE
+		or not hearing_chase_active
+	):
+		return
+
+	for index in get_slide_collision_count():
+		var collision_data := get_slide_collision(index)
+		var collider := collision_data.get_collider()
+
+		if collider == null:
+			continue
+
+		# Preserve lower-body contact damage while the Warden is chasing.
+		if (
+			collider is ArinController
+			and contact_damage_cooldown <= 0.0
+			and _is_lower_body_contact(collision_data)
+		):
+			contact_damage_cooldown = 0.85
+			collider.take_damage(
+				1,
+				Vector2(facing * 210.0, -80.0)
+			)
+			continue
+
+		# The cracked wall is no longer broken automatically at awakening.
+		# It breaks only when Arin's movement lures the chasing Warden into it.
+		if collider.has_method("receive_warden_charge"):
+			var broken := bool(
+				collider.call(
+					"receive_warden_charge",
+					hearing_chase_speed,
+					global_position
+				)
+			)
+
+			if broken:
+				velocity.x = 0.0
+				_enter_stun(0.75)
+
+				if target != null and is_instance_valid(target):
+					target._camera_shake(8.0)
+
+				return
+
+		# For ordinary walls/platform sides, jump instead of getting stuck.
+		var collision_normal := collision_data.get_normal()
+		if (
+			collider is StaticBody2D
+			and absf(collision_normal.x) > 0.65
+			and is_on_floor()
+		):
+			velocity.y = hearing_jump_velocity
+			return
+
+
 func _handle_collisions() -> void:
 	if action != Action.CHARGING:
 		return
@@ -559,7 +754,10 @@ func _handle_collisions() -> void:
 
 				return
 
-		if collider is StaticBody2D and absf(collision_data.get_normal().x) > 0.7:
+		if (
+			collider is StaticBody2D
+			and absf(collision_data.get_normal().x) > 0.7
+		):
 			_enter_stun(0.55)
 			return
 
