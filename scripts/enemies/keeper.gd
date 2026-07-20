@@ -25,6 +25,7 @@ var normal_finish_hint_shown := false
 
 @onready var core: Node2D = $Core
 @onready var core_hitbox: BossCoreHitbox = $CoreHitbox
+var health_bar: EnemyHealthBar
 
 func _ready() -> void:
     add_to_group("enemy")
@@ -43,6 +44,12 @@ func _ready() -> void:
     core.visible = false
     core_hitbox.boss = self
     core_hitbox.set_enabled(false)
+    health_bar = EnemyHealthBar.new()
+    health_bar.position = Vector2(0, -235)
+    health_bar.bar_size = Vector2(174, 16)
+    add_child(health_bar)
+    health_bar.setup("KEEPER", max_health, health)
+    health_changed.connect(health_bar.update_health)
 
 func _exit_tree() -> void:
     action_generation += 1
@@ -126,6 +133,18 @@ func receive_kick(
     _source: Node
 ) -> void:
     return
+
+func receive_weapon_hit(
+    damage: int, _direction: Vector2, weapon: String, _source: Node = null
+) -> void:
+    if defeat_emitted or shielded:
+        return
+    if phase == 1 or (phase == 3 and final_exposed):
+        health = maxi(health - maxi(damage, 1), 0)
+        health_changed.emit(health, max_health)
+        AudioManager.play_sfx("boss_hit_sfx")
+        if health <= 0:
+            _emit_defeated_once()
 
 func receive_core_kick(
     _force: float,
@@ -312,3 +331,4 @@ func reset_state() -> void:
     core_hitbox.set_enabled(false)
     modulate = Color.WHITE
     velocity = Vector2.ZERO
+    health_changed.emit(health, max_health)

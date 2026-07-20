@@ -18,6 +18,7 @@ var defeated_once := false
 var phase_generation := 0
 
 @onready var core: Node2D = $Core
+var health_bar: EnemyHealthBar
 
 func _ready() -> void:
     add_to_group("enemy")
@@ -29,6 +30,12 @@ func _ready() -> void:
         )
     )
     core.visible = false
+    health_bar = EnemyHealthBar.new()
+    health_bar.position = Vector2(0, -205)
+    health_bar.bar_size = Vector2(158, 16)
+    add_child(health_bar)
+    health_bar.setup("GATEKEEPER", max_health, health)
+    health_changed.connect(health_bar.update_health)
 
 func set_target(value: ArinController) -> void:
     target = value
@@ -109,6 +116,22 @@ func receive_kick(
         defeated.emit()
         queue_free()
 
+func receive_weapon_hit(
+    damage: int, direction: Vector2, weapon: String, _source: Node = null
+) -> void:
+    if not can_receive_combat_effects() or shielded:
+        return
+    var dealt := maxi(damage, 1)
+    health = maxi(health - dealt, 0)
+    health_changed.emit(health, max_health)
+    velocity.x = direction.normalized().x * (170.0 if weapon == "sword" else 95.0)
+    AudioManager.play_sfx("boss_hit_sfx")
+    if health <= 0 and not defeated_once:
+        defeated_once = true
+        world_active = false
+        defeated.emit()
+        queue_free()
+
 func receive_projectile(_reflected: bool, _source: Node = null) -> void:
     return
 
@@ -170,3 +193,4 @@ func reset_state() -> void:
     ground_timer = 3.0
     world_active = false
     velocity = Vector2.ZERO
+    health_changed.emit(health, max_health)

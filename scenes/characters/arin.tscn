@@ -16,6 +16,9 @@ height = 96.0
 [sub_resource type="RectangleShape2D" id="KickShape"]
 size = Vector2(96, 82)
 
+[sub_resource type="RectangleShape2D" id="SwordShape"]
+size = Vector2(126, 84)
+
 [sub_resource type="CircleShape2D" id="InteractShape"]
 radius = 86.0
 
@@ -29,8 +32,27 @@ position = Vector2(0, -115)
 scale = Vector2(2.4, 2.4)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot" unique_id=1781697298]
-scale = Vector2(1.5, 1.5)
 sprite_frames = SubResource("EmptyFrames")
+
+[node name="SwordPivot" type="Node2D" parent="VisualRoot" unique_id=718781328]
+position = Vector2(21, 1)
+rotation = 0.55
+
+[node name="Blade" type="Polygon2D" parent="VisualRoot/SwordPivot" unique_id=1651285314]
+color = Color(0.78, 0.88, 0.97, 1)
+polygon = PackedVector2Array(4, -5, 58, -5, 72, 0, 58, 5, 4, 5)
+
+[node name="BladeGlow" type="Polygon2D" parent="VisualRoot/SwordPivot" unique_id=1086102144]
+color = Color(0.58, 0.86, 1, 0.8)
+polygon = PackedVector2Array(8, -2, 58, -2, 66, 0, 58, 2, 8, 2)
+
+[node name="Guard" type="Polygon2D" parent="VisualRoot/SwordPivot" unique_id=857275637]
+color = Color(0.91, 0.69, 0.22, 1)
+polygon = PackedVector2Array(0, -13, 7, -13, 7, 13, 0, 13)
+
+[node name="Handle" type="Polygon2D" parent="VisualRoot/SwordPivot" unique_id=1667776768]
+color = Color(0.21, 0.12, 0.09, 1)
+polygon = PackedVector2Array(-20, -4, 0, -4, 0, 4, -20, 4)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=947034899]
 position = Vector2(0, -46)
@@ -55,6 +77,18 @@ collision_mask = 740
 [node name="CollisionShape2D" type="CollisionShape2D" parent="KickHitbox" unique_id=1166034113]
 shape = SubResource("KickShape")
 disabled = true
+
+[node name="SwordHitbox" type="Area2D" parent="." unique_id=920058528]
+position = Vector2(78, -48)
+collision_layer = 8
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SwordHitbox" unique_id=1118355709]
+shape = SubResource("SwordShape")
+disabled = true
+
+[node name="StarOrigin" type="Marker2D" parent="." unique_id=511075132]
+position = Vector2(56, -54)
 
 [node name="InteractionDetector" type="Area2D" parent="." unique_id=833667759]
 position = Vector2(42, -42)

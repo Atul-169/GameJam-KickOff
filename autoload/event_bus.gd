@@ -22,5 +22,7 @@ signal boss_phase_changed(phase: int)
 signal truth_pulse_requested
 signal settings_changed
 signal kick_charge_changed(value: float)
+signal star_ammo_changed(current: int, maximum: int)
+signal player_weapon_used(weapon: String, origin: Vector2, direction: Vector2)
 signal cutscene_started
 signal cutscene_ended

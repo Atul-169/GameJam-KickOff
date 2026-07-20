@@ -15,6 +15,7 @@ var health_label: Label
 var health_icons: HBoxContainer
 var sigil_label: Label
 var sigil_icons: HBoxContainer
+var star_count_label: Label
 var state_label: Label
 var timer_label: Label
 var objective_label: Label
@@ -67,6 +68,10 @@ func _ready() -> void:
 		func(value: float) -> void:
 			charge_bar.value = value
 	)
+	EventBus.star_ammo_changed.connect(
+		func(_current: int, _maximum: int) -> void:
+			update_stats()
+	)
 	update_stats()
 
 func _exit_tree() -> void:
@@ -109,7 +114,7 @@ func _build_status_panel() -> void:
 	status_panel = PanelContainer.new()
 	var panel := status_panel
 	panel.position = Vector2(28, 24)
-	panel.size = Vector2(430, 154)
+	panel.size = Vector2(430, 208)
 	panel.add_theme_stylebox_override(
 		"panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84))
 	)
@@ -124,6 +129,17 @@ func _build_status_panel() -> void:
 	health_icons = HBoxContainer.new()
 	health_icons.add_theme_constant_override("separation", 6)
 	box.add_child(health_icons)
+	var star_row := HBoxContainer.new()
+	star_row.add_theme_constant_override("separation", 12)
+	box.add_child(star_row)
+	var star_title := Label.new()
+	star_title.text = "THROWING STARS"
+	star_title.add_theme_font_size_override("font_size", 17)
+	star_row.add_child(star_title)
+	star_count_label = Label.new()
+	star_count_label.add_theme_font_size_override("font_size", 19)
+	star_count_label.add_theme_color_override("font_color", Color("ffe36a"))
+	star_row.add_child(star_count_label)
 	sigil_label = Label.new()
 	sigil_label.text = "SIGILS"
 	sigil_label.add_theme_font_size_override("font_size", 17)
@@ -172,8 +188,8 @@ func _build_objective_panel() -> void:
 func _build_charge_panel() -> void:
 	charge_panel = PanelContainer.new()
 	var panel := charge_panel
-	panel.position = Vector2(1490, 900)
-	panel.size = Vector2(400, 140)
+	panel.position = Vector2(1340, 884)
+	panel.size = Vector2(550, 156)
 	panel.add_theme_stylebox_override(
 		"panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84))
 	)
@@ -189,6 +205,8 @@ func _build_charge_panel() -> void:
 			"charged_kick_icon", "K  CHARGED", Vector2(52, 52)
 		)
 	)
+	icon_row.add_child(_icon_or_label("sword_icon", "L  SWORD", Vector2(52, 52)))
+	icon_row.add_child(_icon_or_label("star_icon", "I  STAR", Vector2(52, 52)))
 	box.add_child(icon_row)
 	charge_bar = ProgressBar.new()
 	charge_bar.min_value = 0.0
@@ -299,6 +317,8 @@ func update_stats() -> void:
 			heart.text = "◆" if i < GameState.current_health else "◇"
 			heart.add_theme_font_size_override("font_size", 24)
 			health_icons.add_child(heart)
+
+	star_count_label.text = "★  %d / %d" % [GameState.current_stars, GameState.max_stars]
 
 	_clear_container(sigil_icons)
 	var collected := 0

@@ -66,6 +66,7 @@ var core_pulse_tween: Tween
 @onready var core_visual: Node2D = $CoreVisual
 @onready var vision_cone: Polygon2D = $VisionCone
 @onready var phase_label: Label = $PhaseLabel
+var health_bar: EnemyHealthBar
 
 func _ready() -> void:
     collision_layer = (
@@ -105,6 +106,13 @@ func _ready() -> void:
     _set_core_exposed(false)
     vision_cone.visible = false
     phase_label.text = "DORMANT"
+    health_bar = EnemyHealthBar.new()
+    health_bar.position = Vector2(0, -205)
+    health_bar.bar_size = Vector2(158, 16)
+    add_child(health_bar)
+    health_bar.setup("ECHO WARDEN", CORE_MAX_HEALTH, core_health)
+    core_health_changed.connect(health_bar.update_health)
+    add_to_group("enemy")
     add_to_group("resettable")
     add_to_group("echo_warden")
     if not EventBus.player_kicked.is_connected(_on_player_kicked):
@@ -219,6 +227,29 @@ func receive_kick(
         _enter_stun(0.55 if charged else 0.36)
         AudioManager.play_sfx("boss_hit_sfx")
 
+func receive_weapon_hit(
+    damage: int, _direction: Vector2, weapon: String, _source: Node = null
+) -> void:
+    if not world_active or awakening == Awakening.DORMANT:
+        return
+    if awakening == Awakening.VOICE and action == Action.CORE_EXPOSED:
+        if core_hit_this_window:
+            return
+        core_hit_this_window = true
+        core_health = maxi(core_health - maxi(damage, 1), 0)
+        core_health_changed.emit(core_health, CORE_MAX_HEALTH)
+        AudioManager.play_sfx("boss_hit_sfx")
+        _impact_feedback()
+        if core_health <= 0:
+            _defeat()
+            return
+        _set_core_exposed(false)
+        _enter_stun(0.65 if weapon == "sword" else 0.42)
+        scream_timer = 1.8
+        return
+    if action in [Action.CHARGE_TELEGRAPH, Action.CHARGING]:
+        _enter_stun(0.50 if weapon == "sword" else 0.28)
+
 func receive_projectile(reflected: bool, _source: Node = null) -> void:
     if not world_active or not reflected or awakening < Awakening.VISION:
         return
@@ -268,6 +299,7 @@ func reset_state() -> void:
     scream_timer = 2.0
     enrage_timer = 0.0
     core_health = CORE_MAX_HEALTH
+    core_health_changed.emit(core_health, CORE_MAX_HEALTH)
     core_hit_this_window = false
     queued_charge_duration = 0.0
     collision.set_deferred("disabled", false)

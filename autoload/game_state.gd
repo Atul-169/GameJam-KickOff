@@ -6,6 +6,8 @@ var game_state: GameMode = GameMode.INTRO
 var current_level_id: String = ""
 var max_health: int = 5
 var current_health: int = 5
+var max_stars: int = 5
+var current_stars: int = 5
 var sigils: Dictionary = {
     "time": false,
     "echo": false,
@@ -76,6 +78,7 @@ func reset_run() -> void:
     game_state = GameMode.INTRO
     current_level_id = ""
     current_health = max_health
+    current_stars = max_stars
     damage_taken = 0
     mistakes = 0
     escape_checkpoint = false
@@ -87,10 +90,22 @@ func begin_level(id: String) -> void:
     clear_dialogue_state(false)
     current_level_id = id
     current_health = max_health
+    current_stars = max_stars
     damage_taken = 0
     mistakes = 0
     level_start_time_msec = Time.get_ticks_msec()
     game_state = GameMode.FROZEN
+
+func consume_star() -> bool:
+    if current_stars <= 0:
+        return false
+    current_stars -= 1
+    EventBus.star_ammo_changed.emit(current_stars, max_stars)
+    return true
+
+func refill_stars() -> void:
+    current_stars = max_stars
+    EventBus.star_ammo_changed.emit(current_stars, max_stars)
 
 func add_sigil(id: String) -> bool:
     if not sigils.has(id) or bool(sigils[id]):

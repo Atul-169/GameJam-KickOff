@@ -24,6 +24,7 @@ var stun_generation := 0
 
 @onready var health: HealthComponent = $HealthComponent
 @onready var visual_root: Node2D = $VisualRoot
+var health_bar: EnemyHealthBar
 
 func _ready() -> void:
     add_to_group("enemy")
@@ -38,6 +39,11 @@ func _ready() -> void:
     visual_root.add_child(
         AssetRegistry.make_visual(asset_key, Vector2(70, 92), tint, caption)
     )
+    health_bar = EnemyHealthBar.new()
+    health_bar.position = Vector2(0, -126)
+    add_child(health_bar)
+    health_bar.setup(caption, health.max_health, health.current_health)
+    health.health_changed.connect(health_bar.update_health)
 
 func set_target(value: ArinController) -> void:
     target = value
@@ -105,6 +111,16 @@ func receive_kick(
     health.damage(damage)
     knockback = direction * force * 0.52 + Vector2(0, -100)
     _hit_feedback(charged)
+
+func receive_weapon_hit(
+    damage: int, direction: Vector2, weapon: String, _source: Node = null
+) -> void:
+    if not can_receive_combat_effects():
+        return
+    health.damage(maxi(damage, 1))
+    var force := 380.0 if weapon == "sword" else 210.0
+    knockback = direction.normalized() * force + Vector2(0, -90)
+    _hit_feedback(weapon == "sword")
 
 func receive_projectile(reflected: bool, _source: Node = null) -> void:
     if not can_receive_combat_effects() or not reflected:
