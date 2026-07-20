@@ -228,7 +228,7 @@ func receive_kick(
         AudioManager.play_sfx("boss_hit_sfx")
 
 func receive_weapon_hit(
-    damage: int, _direction: Vector2, weapon: String, _source: Node = null
+    damage: int, _direction: Vector2, _weapon: String, _source: Node = null
 ) -> void:
     if not world_active or awakening == Awakening.DORMANT:
         return
@@ -244,11 +244,11 @@ func receive_weapon_hit(
             _defeat()
             return
         _set_core_exposed(false)
-        _enter_stun(0.65 if weapon == "sword" else 0.42)
+        _enter_stun(0.42)
         scream_timer = 1.8
         return
     if action in [Action.CHARGE_TELEGRAPH, Action.CHARGING]:
-        _enter_stun(0.50 if weapon == "sword" else 0.28)
+        _enter_stun(0.28)
 
 func receive_projectile(reflected: bool, _source: Node = null) -> void:
     if not world_active or not reflected or awakening < Awakening.VISION:

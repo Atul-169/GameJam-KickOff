@@ -113,14 +113,13 @@ func receive_kick(
     _hit_feedback(charged)
 
 func receive_weapon_hit(
-    damage: int, direction: Vector2, weapon: String, _source: Node = null
+    damage: int, direction: Vector2, _weapon: String, _source: Node = null
 ) -> void:
     if not can_receive_combat_effects():
         return
     health.damage(maxi(damage, 1))
-    var force := 380.0 if weapon == "sword" else 210.0
-    knockback = direction.normalized() * force + Vector2(0, -90)
-    _hit_feedback(weapon == "sword")
+    knockback = direction.normalized() * 210.0 + Vector2(0, -90)
+    _hit_feedback(false)
 
 func receive_projectile(reflected: bool, _source: Node = null) -> void:
     if not can_receive_combat_effects() or not reflected:

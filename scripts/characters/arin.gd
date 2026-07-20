@@ -17,8 +17,6 @@ const CHARGED_KICK_FORCE := 900.0
 const HURT_INVULNERABILITY := 1.0
 const COYOTE_TIME := 0.10
 const JUMP_BUFFER := 0.12
-const SWORD_DAMAGE := 2
-const SWORD_FORCE := 380.0
 const STAR_DAMAGE := 1
 const STAR_THROW_COOLDOWN := 0.28
 const THROWING_STAR_SCENE: PackedScene = preload(
@@ -31,9 +29,6 @@ const THROWING_STAR_SCENE: PackedScene = preload(
 @onready var kick_hitbox: Area2D = $KickHitbox
 @onready var kick_shape: CollisionShape2D = $KickHitbox/CollisionShape2D
 @onready var interaction_detector: Area2D = $InteractionDetector
-@onready var sword_pivot: Node2D = $VisualRoot/SwordPivot
-@onready var sword_hitbox: Area2D = $SwordHitbox
-@onready var sword_shape: CollisionShape2D = $SwordHitbox/CollisionShape2D
 @onready var star_origin: Marker2D = $StarOrigin
 @onready var health: HealthComponent = $Components/HealthComponent
 @onready var camera: Camera2D = $Camera2D
@@ -74,9 +69,7 @@ func _ready() -> void:
 	health.died.connect(_on_died)
 	kick_hitbox.body_entered.connect(_kick_body_entered)
 	kick_hitbox.area_entered.connect(_kick_area_entered)
-	sword_hitbox.body_entered.connect(_sword_body_entered)
 	kick_shape.disabled = true
-	sword_shape.disabled = true
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 7.0
 	if not EventBus.cutscene_started.is_connected(lock_input):
@@ -168,7 +161,6 @@ func _apply_facing() -> void:
 	visual_root.scale.x = absf(visual_root.scale.x) * float(facing)
 	kick_origin.position.x = absf(kick_origin.position.x) * float(facing)
 	kick_hitbox.position.x = absf(kick_hitbox.position.x) * float(facing)
-	sword_hitbox.position.x = absf(sword_hitbox.position.x) * float(facing)
 	star_origin.position.x = absf(star_origin.position.x) * float(facing)
 	interaction_detector.position.x = (
 		absf(interaction_detector.position.x) * float(facing)
@@ -187,8 +179,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("interact"):
 		_try_interact()
-	if event.is_action_pressed("sword_attack") and not attacking and not charging:
-		_start_sword_attack()
 	if event.is_action_pressed("throw_star"):
 		_throw_star()
 	if event.is_action_pressed("kick") and not attacking and not charging:
@@ -214,7 +204,6 @@ func _is_gameplay_action_event(event: InputEvent) -> bool:
 		"jump",
 		"kick",
 		"charged_kick",
-		"sword_attack",
 		"throw_star",
 		"interact",
 		"restart",
@@ -269,39 +258,6 @@ func _start_attack(charged: bool, power_scale: float) -> void:
 	attack_charged = false
 	attack_power_scale = 1.0
 
-func _start_sword_attack() -> void:
-	if attacking or knockout_state or hurt_state or _gameplay_input_blocked():
-		return
-	attack_generation += 1
-	var token := attack_generation
-	attacking = true
-	attack_charged = false
-	already_hit.clear()
-	velocity.x = 0.0
-	sprite.play("kick")
-	sword_pivot.rotation = -0.95
-	var swing := create_tween()
-	swing.set_trans(Tween.TRANS_QUAD)
-	swing.set_ease(Tween.EASE_OUT)
-	swing.tween_property(sword_pivot, "rotation", 1.05, 0.18)
-	swing.tween_property(sword_pivot, "rotation", 0.55, 0.14)
-	await get_tree().create_timer(0.07).timeout
-	if not _attack_token_valid(token):
-		return
-	sword_shape.disabled = false
-	AudioManager.play_sfx("kick_sfx")
-	EventBus.player_weapon_used.emit(
-		"sword", sword_hitbox.global_position, Vector2(float(facing), 0)
-	)
-	_spawn_sword_arc()
-	await get_tree().create_timer(0.14).timeout
-	if not _attack_token_valid(token):
-		return
-	sword_shape.disabled = true
-	await get_tree().create_timer(0.16).timeout
-	if not _attack_token_valid(token):
-		return
-	attacking = false
 
 func _throw_star() -> void:
 	if (
@@ -344,34 +300,7 @@ func _show_no_stars_feedback() -> void:
 	tween.tween_property(label, "modulate:a", 0.0, 0.55)
 	tween.chain().tween_callback(label.queue_free)
 
-func _sword_body_entered(body: Node) -> void:
-	if sword_shape.disabled or body == self:
-		return
-	var instance_id := body.get_instance_id()
-	if already_hit.has(instance_id):
-		return
-	already_hit[instance_id] = true
-	if body.has_method("receive_weapon_hit"):
-		body.call(
-			"receive_weapon_hit",
-			SWORD_DAMAGE,
-			Vector2(float(facing), 0),
-			"sword",
-			self,
-		)
 
-func _spawn_sword_arc() -> void:
-	var arc := Line2D.new()
-	arc.width = 8.0
-	arc.default_color = Color(0.68, 0.9, 1.0, 0.9)
-	var direction := float(facing)
-	for index in 9:
-		var angle := lerpf(-0.9, 0.75, float(index) / 8.0)
-		arc.add_point(Vector2(cos(angle) * 82.0 * direction, sin(angle) * 64.0 - 48.0))
-	add_child(arc)
-	var tween := create_tween()
-	tween.tween_property(arc, "modulate:a", 0.0, 0.16)
-	tween.tween_callback(arc.queue_free)
 
 func _attack_token_valid(token: int) -> bool:
 	return (
@@ -392,10 +321,6 @@ func _cancel_attack_state() -> void:
 
 	if is_instance_valid(kick_shape):
 		kick_shape.set_deferred("disabled", true)
-	if is_instance_valid(sword_shape):
-		sword_shape.set_deferred("disabled", true)
-	if is_instance_valid(sword_pivot):
-		sword_pivot.rotation = 0.55
 
 	EventBus.kick_charge_changed.emit(0.0)
 func _kick_body_entered(body: Node) -> void:
@@ -565,8 +490,6 @@ func reset_to_spawn(position_override: Vector2 = Vector2.INF) -> void:
 	invulnerable = false
 	modulate = Color.WHITE
 	kick_shape.disabled = true
-	sword_shape.disabled = true
-	sword_pivot.rotation = 0.55
 	star_throw_cooldown = 0.0
 	EventBus.kick_charge_changed.emit(0.0)
 	sprite.play("idle")

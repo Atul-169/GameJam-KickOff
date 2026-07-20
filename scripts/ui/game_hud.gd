@@ -205,7 +205,6 @@ func _build_charge_panel() -> void:
 			"charged_kick_icon", "K  CHARGED", Vector2(52, 52)
 		)
 	)
-	icon_row.add_child(_icon_or_label("sword_icon", "L  SWORD", Vector2(52, 52)))
 	icon_row.add_child(_icon_or_label("star_icon", "I  STAR", Vector2(52, 52)))
 	box.add_child(icon_row)
 	charge_bar = ProgressBar.new()

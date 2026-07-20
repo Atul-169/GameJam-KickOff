@@ -214,6 +214,7 @@ func _how() -> void:
 		+ "Jump with Space.\n"
 		+ "Kick with J or Left Mouse.\n"
 		+ "Charge a kick with K or Right Mouse.\n"
+		+ "Throw a limited star with I.\n"
 		+ "Press E to read clues or interact.\n"
 		+ "Press R to restart the current challenge.\n\n"
 		+ "Ancient mechanisms respond only to kicks."

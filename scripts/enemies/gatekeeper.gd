@@ -117,14 +117,14 @@ func receive_kick(
         queue_free()
 
 func receive_weapon_hit(
-    damage: int, direction: Vector2, weapon: String, _source: Node = null
+    damage: int, direction: Vector2, _weapon: String, _source: Node = null
 ) -> void:
     if not can_receive_combat_effects() or shielded:
         return
     var dealt := maxi(damage, 1)
     health = maxi(health - dealt, 0)
     health_changed.emit(health, max_health)
-    velocity.x = direction.normalized().x * (170.0 if weapon == "sword" else 95.0)
+    velocity.x = direction.normalized().x * 95.0
     AudioManager.play_sfx("boss_hit_sfx")
     if health <= 0 and not defeated_once:
         defeated_once = true

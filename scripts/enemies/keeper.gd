@@ -135,7 +135,7 @@ func receive_kick(
     return
 
 func receive_weapon_hit(
-    damage: int, _direction: Vector2, weapon: String, _source: Node = null
+    damage: int, _direction: Vector2, _weapon: String, _source: Node = null
 ) -> void:
     if defeat_emitted or shielded:
         return
