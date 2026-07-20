@@ -555,6 +555,39 @@ func _run_intro_cinematic(token: int) -> void:
 	if not dialogue_ok or not _cinematic_valid(token):
 		return
 
+# Astra-এর continuous floating animation বন্ধ করা।
+	if astra_float_tween != null:
+		astra_float_tween.kill()
+		astra_float_tween = null
+
+# Instruction শেষ হলে Astra উপরের দিকে উঠে fade হয়ে যাবে।
+	if astra_visual != null and is_instance_valid(astra_visual):
+		var astra_leave := create_tween().set_parallel(true)
+
+		astra_leave.tween_property(
+			astra_visual,
+			"modulate:a",
+			0.0,
+			0.40
+		).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+		astra_leave.tween_property(
+			astra_visual,
+			"global_position:y",
+			astra_visual.global_position.y - 45.0,
+			0.40
+		).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+		await astra_leave.finished
+
+		if astra_visual != null and is_instance_valid(astra_visual):
+			astra_visual.queue_free()
+
+		astra_visual = null
+
+	if not _cinematic_valid(token):
+		return
+
 	_begin_player_control(token)
 
 
@@ -577,7 +610,7 @@ func _begin_player_control(token: int) -> void:
 	football.angular_velocity = 0.0
 	football.global_position = Vector2(
 		BALL_FOREST_X,
-		FOOTBALL_GROUND_Y
+		BALL_ON_SEAL_Y
 	)
 
 	# The cinematic already performed the failed hand attempt.

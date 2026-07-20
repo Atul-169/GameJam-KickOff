@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://cmgm4fufix7y4" path="res://assets/prologue/interactables/ancient_seal_closed.png" id="13_ej42w"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xrivr"]
-size = Vector2(2210.7534, 267.5982)
+size = Vector2(2210.753, 280.598)
 
 [node name="PrologueForest" type="Node2D" unique_id=1758425441]
 script = ExtResource("1")

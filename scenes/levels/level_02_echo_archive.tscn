@@ -17,6 +17,7 @@ position = Vector2(4320, 350)
 position = Vector2(5480, 675)
 
 [node name="LevelObjects" type="Node2D" parent="." unique_id=787447652]
+position = Vector2(1, 1)
 scale = Vector2(1080, 1080)
 
 [node name="Platforms" type="Node2D" parent="LevelObjects" unique_id=1793875581]

@@ -27,15 +27,16 @@ func _init() -> void:
 
 
 func build_level() -> void:
-	add_floor(Rect2(0, 900, 1320, 600), Color("344250"))
+	_build_gear_hall_background()
+	_add_textured_floor(Rect2(0, 900, 1320, 600))
 
 	# Keep the upper route solid without blocking the lower shortcut tunnel.
-	add_floor(Rect2(1600, 900, 1680, 120), Color("344250"))
+	_add_textured_floor(Rect2(1600, 900, 1680, 120))
 
-	add_floor(Rect2(3520, 900, 980, 600), Color("344250"))
-	add_floor(Rect2(1100, 1320, 2500, 180), Color("283846"))
-	add_wall(Vector2(1080, 1210), Vector2(40, 220), 0.0, Color("283846"))
-	add_wall(Vector2(3620, 1210), Vector2(40, 220), 0.0, Color("283846"))
+	_add_textured_floor(Rect2(3520, 900, 980, 600))
+	_add_textured_floor(Rect2(1100, 1320, 2500, 180))
+	_add_textured_wall(Vector2(1080, 1210), Vector2(40, 220))
+	_add_textured_wall(Vector2(3620, 1210), Vector2(40, 220))
 
 	add_label(
 		"THE PATH EXISTS ONLY WHILE THE HEART TURNS.",
@@ -53,7 +54,7 @@ func build_level() -> void:
 	pedestal.caption = "GEAR PEDESTAL"
 	pedestal.kicked.connect(_kickoff)
 
-	add_floor(Rect2(735, 810, 180, 90), Color("536477"))
+	_add_textured_floor(Rect2(735, 810, 180, 90))
 
 	var p1 := spawn_scene(
 		"res://scenes/environment/moving_platform.tscn",
@@ -103,7 +104,7 @@ func build_level() -> void:
 	p2.offset = Vector2(0, -270)
 	p2.travel_time = 2.0
 
-	add_wall(Vector2(2700, 770), Vector2(170, 260), 0.0, Color("465267"))
+	_add_textured_wall(Vector2(2700, 770), Vector2(170, 260))
 
 	var rock1 := spawn_scene(
 		"res://scenes/hazards/falling_rock.tscn",
@@ -362,3 +363,46 @@ func on_time_expired() -> void:
 		gate.set_closure(1.0)
 	hud.show_message("TIME EXPIRED", 1.2)
 	super.on_time_expired()
+
+
+func _build_gear_hall_background() -> void:
+	var texture_keys := [
+		"gear_hall_bg_01",
+		"gear_hall_bg_02",
+		"gear_hall_bg_03",
+	]
+
+	for index in range(texture_keys.size()):
+		var texture := AssetRegistry.load_texture(texture_keys[index])
+		if texture == null:
+			continue
+
+		var sprite := Sprite2D.new()
+		sprite.name = "GearHallBackground%02d" % (index + 1)
+		sprite.texture = texture
+		sprite.centered = true
+		sprite.position = Vector2(960.0 + 1920.0 * index, 540.0)
+		sprite.z_index = -40
+		add_child(sprite)
+
+
+func _add_textured_floor(rect: Rect2) -> StaticBody2D:
+	var body := add_floor(rect, Color(0.0, 0.0, 0.0, 0.0))
+	var texture := AssetRegistry.load_texture("gear_hall_floor_repeat")
+	if texture == null:
+		return body
+
+	var visual := Sprite2D.new()
+	visual.texture = texture
+	visual.centered = false
+	visual.region_enabled = true
+	visual.region_rect = Rect2(Vector2.ZERO, rect.size)
+	visual.position = -rect.size * 0.5
+	visual.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	visual.z_index = -1
+	body.add_child(visual)
+	return body
+
+
+func _add_textured_wall(center: Vector2, size: Vector2) -> StaticBody2D:
+	return _add_textured_floor(Rect2(center - size * 0.5, size))

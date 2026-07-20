@@ -25,7 +25,6 @@ func _ready() -> void:
         "CRACKED",
     )
     add_child(visual_root)
-    _add_crack_lines()
     add_to_group("resettable")
 
 func set_world_active(active: bool) -> void:
