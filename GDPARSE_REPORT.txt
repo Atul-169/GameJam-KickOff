@@ -1,7 +1,0 @@
-GDPARSE REPORT
-==============
-A full sequential gdparse sweep exceeded the sandbox execution window.
-All 12 modified/new gameplay and regression-test scripts were then parsed individually and passed.
-See TARGETED_GDPARSE_REPORT.txt.
-
-This is source-parser validation only and is not a Godot engine import test.
