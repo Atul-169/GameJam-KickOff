@@ -27,7 +27,20 @@ const BALL_FOREST_X := SEAL_X + NIKO_FALL_X_OFFSET
 
 var niko: NikoCharacter
 var football: Football
+
+const SEAL_CLOSED_TEXTURE: Texture2D = preload(
+	"res://assets/prologue/interactables/ancient_seal_closed.png"
+)
+
+const SEAL_OPEN_TEXTURE: Texture2D = preload(
+	"res://assets/prologue/interactables/ancient_seal_open.png"
+)
+
 @onready var seal: AncientSeal = $AncientSeal
+@onready var seal_visual: Sprite2D = $AncientSeal/ClosedVisual
+@onready var tunnel_point: Marker2D = $AncientSeal/TunnelPoint
+
+
 var astra_visual: Node2D
 var astra_float_tween: Tween
 
@@ -40,11 +53,15 @@ func _init() -> void:
 	level_id = "prologue"
 	level_title = "Prologue: The Lost Ball"
 	music_key = "forest_music"
-	world_width = 3500.0
+	world_width = 3800.0
 	checkpoint_position = Vector2(340.0, GROUND_Y)
 
 
 func build_level() -> void:
+	
+	seal_visual.texture = SEAL_CLOSED_TEXTURE
+	seal_visual.visible = true
+	seal_visual.modulate = Color.WHITE
 	transition_started = false
 	sequence_state = SequenceState.INTRO_START
 
@@ -69,9 +86,15 @@ func build_level() -> void:
 
 
 func post_ready() -> void:
+	if not EventBus.player_kicked.is_connected(_on_player_kicked_near_seal):
+		EventBus.player_kicked.connect(_on_player_kicked_near_seal)
+
+	state_controller.set_state(GameState.GameMode.INTRO)
 	state_controller.set_state(GameState.GameMode.INTRO)
 	canvas_modulate.color = Color.WHITE
 	set_objective("")
+	
+	
 
 	if hud.has_method("set_state_panel_visible"):
 		hud.call("set_state_panel_visible", false)
@@ -166,30 +189,49 @@ func _run_intro_cinematic(token: int) -> void:
 		return
 	sequence_state = SequenceState.BALL_TO_FOREST
 
-	var ball_arc := create_tween()
-	ball_arc.tween_property(
-		football,
-		"global_position",
-		Vector2(1050.0, 720.0),
-		0.55
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	ball_arc.tween_property(
-		football,
-		"global_position",
-		Vector2(1700.0, 790.0),
-		0.60
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	ball_arc.tween_property(
-		football,
-		"global_position",
-		Vector2(BALL_FOREST_X, FOOTBALL_GROUND_Y),
-		0.65
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	var ball_start := football.global_position
+	var ball_end := Vector2(
+		BALL_FOREST_X,
+		FOOTBALL_GROUND_Y
+	)
 
-	var ball_spin := create_tween()
-	ball_spin.tween_property(football, "rotation", TAU * 5.0, 1.80)
+	# এই point যত উপরে যাবে, ball তত উঁচু arc করবে।
+	var ball_control := Vector2(
+		(ball_start.x + ball_end.x) * 0.5,
+		FOOTBALL_GROUND_Y - 315.0
+	)
 
-	await ball_arc.finished
+	var ball_motion := create_tween().set_parallel(true)
+
+	# একটি continuous curve দিয়ে ball যাবে।
+	ball_motion.tween_method(
+		_set_ball_arc_progress.bind(
+			ball_start,
+			ball_control,
+			ball_end
+		),
+		0.0,
+		1.0,
+		1.80
+	).set_trans(Tween.TRANS_SINE).set_ease(
+		Tween.EASE_IN_OUT
+	)
+
+	# একই সময়ে smooth spin করবে।
+	ball_motion.tween_property(
+		football,
+		"rotation",
+		football.rotation + TAU * 5.0,
+		1.80
+	).set_trans(Tween.TRANS_LINEAR)
+
+	await ball_motion.finished
+
+	if not _cinematic_valid(token):
+		return
+
+	football.global_position = ball_end
+	football.rotation = fmod(football.rotation, TAU)
 	if not _cinematic_valid(token):
 		return
 
@@ -289,10 +331,9 @@ func _run_intro_cinematic(token: int) -> void:
 	niko.play_state("idle")
 
 	# --------------------------------------------------------------
-	# SHOT 5: Niko falls at a point slightly right of the seal
+	# SHOT 5: Seal opens and Niko falls through the tunnel
 	# --------------------------------------------------------------
 	sequence_state = SequenceState.NIKO_FALLING
-	niko.play_state("fall")
 
 	dialogue_ok = await hud.show_dialogue_sequence(
 		[
@@ -304,26 +345,94 @@ func _run_intro_cinematic(token: int) -> void:
 		],
 		true
 	)
+
 	if not dialogue_ok or not _cinematic_valid(token):
 		return
 
+	# Closed seal-এর পরিবর্তে Open seal দেখাবে।
+	seal_visual.texture = SEAL_OPEN_TEXTURE
+
+	await get_tree().create_timer(0.25).timeout
+
+	if not _cinematic_valid(token):
+		return
+
+	var tunnel_position := tunnel_point.global_position
+	var original_niko_scale := niko.scale
+
+	niko.play_state("fall")
+	niko.z_index = 51
+	niko.modulate = Color.WHITE
+
+	# Niko-কে tunnel-এর মুখের মাঝখানে নেওয়া।
+	var move_to_tunnel := create_tween()
+	move_to_tunnel.tween_property(
+		niko,
+		"global_position",
+		tunnel_position,
+		0.28
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	await move_to_tunnel.finished
+
+	if not _cinematic_valid(token):
+		return
+
+	# প্রথমে opening-এর সামনে থাকবে।
+	# Hole-এর ভেতরে ঢুকলে seal-এর পিছনে চলে যাবে।
 	var niko_fall := create_tween()
+
 	niko_fall.tween_property(
 		niko,
 		"global_position",
-		Vector2(
-			SEAL_X + NIKO_FALL_X_OFFSET,
-			GROUND_Y + 430.0
-		),
-		1.0
+		tunnel_position + Vector2(0.0, 25.0),
+		0.18
 	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
-	
+	niko_fall.tween_callback(
+		func() -> void:
+			niko.z_index = 49
+	)
+
+	niko_fall.tween_property(
+		niko,
+		"global_position",
+		tunnel_position + Vector2(0.0, 220.0),
+		0.65
+	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+	niko_fall.parallel().tween_property(
+		niko,
+		"scale",
+		original_niko_scale * 0.35,
+		0.65
+	)
+
+	niko_fall.parallel().tween_property(
+		niko,
+		"modulate:a",
+		0.0,
+		0.50
+	).set_delay(0.10)
+
 	await niko_fall.finished
+
 	if not _cinematic_valid(token):
 		return
 
 	niko.visible = false
+
+	# Niko পড়ে যাওয়ার পর seal আবার বন্ধ হবে।
+	sequence_state = SequenceState.SEAL_CLOSING
+	seal_visual.texture = SEAL_CLOSED_TEXTURE
+
+	await get_tree().create_timer(0.20).timeout
+
+	# Restart/reset-এর জন্য values স্বাভাবিক করে রাখা।
+	niko.scale = original_niko_scale
+	niko.modulate = Color.WHITE
+	niko.z_index = 0
+
 	football.global_position.y = FOOTBALL_GROUND_Y
 
 	# --------------------------------------------------------------
@@ -469,9 +578,17 @@ func _begin_player_control(token: int) -> void:
 	)
 
 	# The cinematic already performed the failed hand attempt.
-	seal.hand_used = true
+	seal.set_enabled(true)
+	seal.set_hand_attempted(true)
 	seal.set_interaction_enabled(false)
 	seal.set_kick_enabled(true)
+
+	print(
+		"Seal ready: ",
+		"enabled=", seal.enabled,
+		", hand_used=", seal.hand_used,
+		", kick_enabled=", seal.kick_enabled
+	)
 
 	state_controller.set_state(GameState.GameMode.ACTIVE)
 
@@ -637,3 +754,56 @@ func _forest_art() -> void:
 		cloud.color = Color(0.75, 0.58, 0.66, 0.18)
 		cloud.z_index = -27
 		add_child(cloud)
+
+func _set_ball_arc_progress(
+	progress: float,
+	start_position: Vector2,
+	control_position: Vector2,
+	end_position: Vector2
+) -> void:
+	var first_line := start_position.lerp(
+		control_position,
+		progress
+	)
+
+	var second_line := control_position.lerp(
+		end_position,
+		progress
+	)
+
+	football.global_position = first_line.lerp(
+		second_line,
+		progress
+	)
+func _on_player_kicked_near_seal(
+	charged: bool,
+	kick_origin: Vector2,
+	kick_direction: Vector2
+) -> void:
+	if transition_started:
+		return
+
+	if sequence_state != SequenceState.PLAYER_CONTROL:
+		return
+
+	if seal == null or not is_instance_valid(seal):
+		return
+
+	if not seal.can_receive_kick():
+		return
+
+	var distance_to_seal := kick_origin.distance_to(
+		seal.global_position
+	)
+
+	# Arin seal-এর কাছে থেকে kick করলে নিশ্চিতভাবে detect হবে।
+	if distance_to_seal > 220.0:
+		return
+
+	seal.attempt_kick(
+		1.0,
+		1,
+		kick_direction,
+		charged,
+		player
+	)

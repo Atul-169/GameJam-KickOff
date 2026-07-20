@@ -1,66 +1,82 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://ci3sj4jukir4m"]
 
-[ext_resource path="res://scripts/characters/arin.gd" type="Script" id="1"]
-[ext_resource path="res://scripts/components/health_component.gd" type="Script" id="2"]
+[ext_resource type="Script" uid="uid://cwk7lta7j7hp" path="res://scripts/characters/arin.gd" id="1"]
+[ext_resource type="Script" uid="uid://chndgh8ch0d7b" path="res://scripts/components/health_component.gd" id="2"]
+
+[sub_resource type="SpriteFrames" id="EmptyFrames"]
+
 [sub_resource type="CapsuleShape2D" id="BodyShape"]
 radius = 25.0
 height = 92.0
+
 [sub_resource type="CapsuleShape2D" id="HurtShape"]
 radius = 28.0
 height = 96.0
+
 [sub_resource type="RectangleShape2D" id="KickShape"]
 size = Vector2(96, 82)
+
 [sub_resource type="CircleShape2D" id="InteractShape"]
 radius = 86.0
-[sub_resource type="SpriteFrames" id="EmptyFrames"]
 
-[node name="Arin" type="CharacterBody2D"]
+[node name="Arin" type="CharacterBody2D" unique_id=1368909774]
 collision_layer = 2
 collision_mask = 769
 script = ExtResource("1")
 
-[node name="VisualRoot" type="Node2D" parent="."]
+[node name="VisualRoot" type="Node2D" parent="." unique_id=1413662118]
 position = Vector2(0, -48)
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot"]
-sprite_frames = SubResource("EmptyFrames")
-centered = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot" unique_id=1781697298]
+sprite_frames = SubResource("EmptyFrames")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=947034899]
 position = Vector2(0, -46)
 shape = SubResource("BodyShape")
-[node name="Hurtbox" type="Area2D" parent="."]
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=430586438]
 collision_layer = 2
 collision_mask = 272
-monitoring = true
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1565557410]
 position = Vector2(0, -48)
 shape = SubResource("HurtShape")
-[node name="KickOrigin" type="Marker2D" parent="."]
+
+[node name="KickOrigin" type="Marker2D" parent="." unique_id=877847754]
 position = Vector2(52, -45)
-[node name="KickHitbox" type="Area2D" parent="."]
+
+[node name="KickHitbox" type="Area2D" parent="." unique_id=1808946171]
 position = Vector2(62, -45)
 collision_layer = 8
 collision_mask = 740
-monitoring = true
-[node name="CollisionShape2D" type="CollisionShape2D" parent="KickHitbox"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KickHitbox" unique_id=1166034113]
 shape = SubResource("KickShape")
 disabled = true
-[node name="InteractionDetector" type="Area2D" parent="."]
+
+[node name="InteractionDetector" type="Area2D" parent="." unique_id=833667759]
 position = Vector2(42, -42)
 collision_layer = 0
 collision_mask = 64
-monitoring = true
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionDetector"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionDetector" unique_id=590732536]
 shape = SubResource("InteractShape")
-[node name="Components" type="Node" parent="."]
-[node name="HealthComponent" type="Node" parent="Components"]
+
+[node name="Components" type="Node" parent="." unique_id=310062290]
+
+[node name="HealthComponent" type="Node" parent="Components" unique_id=365115773]
 script = ExtResource("2")
 max_health = 5
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(0, -160)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=618945524]
+position = Vector2(200, -160)
 position_smoothing_enabled = true
 position_smoothing_speed = 7.0
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-[node name="Audio" type="Node" parent="."]
-[node name="VoicePlayer" type="AudioStreamPlayer2D" parent="Audio"]
-[node name="MovementSFXPlayer" type="AudioStreamPlayer2D" parent="Audio"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1915191335]
+
+[node name="Audio" type="Node" parent="." unique_id=430200468]
+
+[node name="VoicePlayer" type="AudioStreamPlayer2D" parent="Audio" unique_id=1448189715]
+
+[node name="MovementSFXPlayer" type="AudioStreamPlayer2D" parent="Audio" unique_id=1611360502]
