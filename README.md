@@ -1,131 +1,205 @@
 # The First Kick: Echoes Beneath
 
-A Godot **4.7** 2D side-scrolling mystery, platforming, puzzle, and action game targeting Windows and Web with the GL Compatibility renderer.
+<p align="center">
+  <strong>A cinematic 2D action-platformer developed for the IUT 12th ICT FEST 2026 GameJam.</strong>
+</p>
 
-This archive continues directly from the uploaded cinematic-intro project. The Prologue cinematic, Level 1, Level 3, Level 4, ending, menus, inputs, autoloads, dialogue queue, reset protection, fixed asset paths, and procedural fallbacks are preserved. Only Level 2 has been redesigned.
+<p align="center">
+  <b>Theme:</b> KICKOFF &nbsp;•&nbsp;
+  <b>Engine:</b> Godot Engine 4.7 &nbsp;•&nbsp;
+  <b>Platform:</b> Windows PC
+</p>
 
-## Opening cinematic
+---
 
-The opening remains an automatic in-engine cinematic. Arin kicks the football through scripted motion, Niko runs after it and falls through the Ancient Seal, Arin fails to open the seal by hand, and Astra appears. Player control begins after Astra's introduction, with **Kick the Ancient Seal** as the first gameplay objective.
+## About the Game
 
-## Redesigned Level 2
+**The First Kick: Echoes Beneath** is a cinematic 2D action-platformer set in a forgotten world buried beneath the surface.
 
-Level 2 is now titled **Archive of Echoes — The Waking Warden**.
+A mysterious first kick awakens an ancient force and begins the player's journey. The player must explore atmospheric environments, overcome enemies and guardians, activate ancient mechanisms, and master kick-based abilities to progress through multiple levels.
 
-It combines:
+The game combines platforming, combat, environmental interaction, exploration, and story-driven progression.
 
-- an environmental riddle;
-- manual Echo Orb aiming;
-- multi-layer platforming;
-- a progressive Warden encounter;
-- projectile reflection;
-- a timed gate challenge;
-- a three-hit exposed-core mini-boss loop.
+---
 
-### Riddle
+## Theme Adaptation — KICKOFF
 
-The archive inscription reads:
+The theme **KICKOFF** is represented both literally and narratively.
 
-> First, the silent hall must hear.  
-> Then, the watcher learns to see.  
-> Only after sight returns may the sealed tongue speak.  
-> When all three awaken, silence the heart that echoes.
+The player's first kick triggers the awakening of the ancient world beneath and starts the entire journey. Kicking is also a core gameplay mechanic used to:
 
-The required rune order is **EAR → EYE → MOUTH**, but the HUD never displays the full solution or explicitly names the next rune.
+- Fight enemies
+- Interact with objects
+- Activate runes and mechanisms
+- Solve environmental challenges
+- Progress through different levels
 
-### Level flow
+---
 
-1. The room begins **FROZEN** with the dormant Echo Warden visible.
-2. The first kick of the Echo Orb starts **KICKOFF** and activates the room.
-3. EAR requires an aimed ricochet and awakens the blind Warden's hearing.
-4. The Warden charges toward remembered sound positions; lure it into the cracked wall to open the upper route.
-5. EYE requires a new elevated Orb shot. It gives the Warden vision and a telegraphed reflectable projectile.
-6. A reflected Warden projectile is the only attack that opens the Echo Lock and its four-second gate.
-7. Kick the Orb through the temporary opening to activate MOUTH.
-8. MOUTH adds a jumpable scream shockwave and briefly exposes the Echo Core.
-9. A charged kick creates a delayed cyan **Resonance Strike**. Only that delayed strike can damage the exposed core.
-10. Three valid core hits silence the Warden, open the archive exit, play the existing Niko transmission, and preserve the normal ECHO Sigil/results flow.
+## Key Features
 
-### Wrong-rune consequence
+- Cinematic 2D action-platforming
+- Kick-based combat and interaction
+- Multiple atmospheric levels
+- Environmental puzzles and obstacles
+- Unique enemy encounters
+- Guardian and boss challenges
+- Story-driven fantasy setting
+- Keyboard and mouse support
+- Playable Windows build with no additional software required
 
-A wrong rune contact:
+---
 
-- counts one mistake;
-- clears visible rune progress;
-- returns the Orb to the initial pedestal with zero velocity;
-- damages Arin by exactly one health;
-- enrages the Warden temporarily;
-- keeps already-awakened Warden abilities;
-- does not restart the entire level.
+## Controls
 
-## Level 2 controls
-
-| Action | Input |
+| Action | Key |
 |---|---|
-| Move | A / D or Left / Right |
-| Jump | Space |
-| Aim Orb upward | W or Up Arrow |
-| Aim Orb downward | S or Down Arrow |
-| Normal Kick | J or Left Mouse |
-| Charged Kick / Resonance Kick | Hold and release K or Right Mouse |
-| Restart challenge | R |
-| Pause | Escape |
+| Move Left | `A` / `Left Arrow` |
+| Move Right | `D` / `Right Arrow` |
+| Jump | `Space` |
+| Kick | `K` |
+| Interact | `E` |
+| Pause / Menu | `Esc` |
 
-The existing manual Orb aiming arrow and angle label remain active while Arin is near a stationary Orb.
+> Update the control table if any key is different in the final build.
 
-## Asset replacement
+---
 
-The project still runs without final artwork. Newly supported fixed paths are:
+## Download and Installation
 
-- `res://assets/enemies/echo_warden/echo_warden.png`
-- `res://assets/environment/echo_cracked_wall.png`
-- `res://assets/interactables/echo_timed_gate.png`
-- `res://assets/interactables/echo_seal_lock.png`
+1. Download `The_First_Kick_Windows_v1.0.zip` from the itch.io page.
+2. Extract the complete ZIP file.
+3. Open the extracted `The_First_Kick_Windows` folder.
+4. Run `The_First_Kick.exe`.
+5. Keep `The_First_Kick.exe` and `The_First_Kick.pck` in the same folder.
 
-Missing files use readable procedural visuals through `AssetRegistry`. Normal asset replacement requires no gameplay-script changes.
+No additional software or game engine installation is required.
 
-## Open in Godot
+If Windows displays a security warning:
 
-1. Install Godot 4.7 or a compatible Godot 4.x release.
-2. Extract the archive.
-3. Import the root-level `project.godot`.
-4. Allow resource import to finish.
-5. Run the project with F6/F5.
+1. Click **More info**.
+2. Click **Run anyway**.
 
-The project uses a 1920×1080 base viewport and GL Compatibility rendering.
+---
 
-## Important Level 2 files
+## Running the Project from Source
 
-- `scripts/levels/level_02_echo_archive.gd`
-- `scripts/enemies/echo_warden.gd`
-- `scripts/enemies/warden_echo_projectile.gd`
-- `scripts/enemies/echo_core_hitbox.gd`
-- `scripts/environment/echo_breakable_wall.gd`
-- `scripts/interactables/echo_timed_gate.gd`
-- `scripts/interactables/echo_seal_lock.gd`
-- `scripts/interactables/resonance_strike.gd`
-- `scripts/hazards/echo_shockwave.gd`
-- `scripts/interactables/echo_orb.gd`
-- `scripts/interactables/puzzle_rune.gd`
-- `tests/level2_echo_warden_test.gd`
-- `tests/level2_orb_recovery_test.gd`
+### Requirements
 
-## Validation performed
+- Godot Engine 4.7
+- Git
+
+### Steps
 
 ```bash
-python tools/static_validate.py
-gdlint <all modified and added GDScript files>
-gdparse <all modified and added GDScript files>
-unzip -t <final archive>
+git clone https://github.com/Atul-169/GameJam-KickOff.git
+cd GameJam-KickOff
 ```
 
-Source validation results are recorded in `STATIC_VALIDATION_REPORT.txt`, `TEST_REPORT.md`, and `LEVEL2_WARDEN_CHANGELOG.md`.
+Then:
 
-No Godot executable was available in the environment. Godot engine import, runtime playthrough, in-engine test execution, manual gameplay balancing, and Windows/Web exports therefore remain unverified.
+1. Open Godot Engine.
+2. Select **Import**.
+3. Choose the repository's `project.godot` file.
+4. Open the project.
+5. Press `F6` or `F5` to run the game.
 
-## Export presets
+---
 
-- Windows Desktop: `build/windows/TheFirstKick.exe`
-- Web: `build/web/index.html`
+## Project Structure
 
-No exported builds are included because Godot and export templates were unavailable.
+```text
+GameJam-KickOff/
+├── assets/              # Visual, audio, font and other game assets
+├── autoload/            # Global scripts and singleton systems
+├── resources/           # Reusable Godot resources
+├── scenes/              # Levels, UI, player, enemies and game scenes
+├── scripts/             # GDScript source files
+├── tests/               # Development tests, if applicable
+├── tools/               # Development utilities, if applicable
+├── .gitignore
+├── export_presets.cfg
+├── project.godot
+└── README.md
+```
+
+---
+
+## Team Information
+
+**Team Name:** `BABA R DOA`
+
+| Team Member | Contribution |
+|---|---|
+| NAFIS MOHTASIM RAMIM | Programming and gameplay systems |
+| ESTIAK ZAMAN ATUL | Level design and game design |
+| SHAHARIAR RAHMAN SHANTO | UI, visual integration and testing |
+
+Replace the placeholders with the actual names and contributions of all team members.
+
+---
+
+## Technologies Used
+
+- Godot Engine 4.7
+- GDScript
+- Godot 2D rendering system
+- Godot animation system
+- Godot physics system
+- Git and GitHub
+
+---
+
+## Asset and Audio Credits
+
+The project contains original and permitted third-party assets, including visual assets, music, sound effects, fonts, textures, sprites, and background artwork.
+
+All third-party assets remain the property of their respective creators and are used according to their original licenses and terms of use.
+
+No copyrighted material from another commercial game was intentionally included.
+
+For complete attribution, list every external asset with:
+
+- Asset name
+- Creator name
+- Source link
+- License
+
+---
+
+## Generative AI Disclosure
+
+Generative AI was used for selected promotional artwork and visual concept assets, including the itch.io cover artwork.
+
+All gameplay programming, mechanics, level design, scene integration, UI implementation, testing, debugging, and final project development were completed by the development team.
+
+---
+
+## GameJam Information
+
+This game was developed for:
+
+**IUT 12th ICT FEST 2026 — GameJam**
+
+- **Theme:** KICKOFF
+- **Online Round:** July 2026
+- **Target Platform:** Windows PC
+- **Engine:** Godot Engine 4.7
+
+---
+
+## Project Links
+
+- **itch.io:** https://nafis-ramim.itch.io/the-first-kick-echoes-beneath
+- **GitHub:** https://github.com/Atul-169/GameJam-KickOff
+- **Pitch Video:** Coming soon
+
+---
+
+## License Notice
+
+The original source code, gameplay systems, level design, and original project content belong to the development team.
+
+Third-party assets remain subject to their respective licenses.
+
+This repository is publicly available for GameJam verification and evaluation.
