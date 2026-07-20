@@ -15,14 +15,42 @@ var active_tween: Tween
 func _ready() -> void:
 	start_rotation = rotation
 
-	add_child(
-		AssetRegistry.make_visual(
-			"breakable_pillar",
-			Vector2(82, 300),
-			Color("7c786f"),
-			"PILLAR"
-		)
+	var pillar_visual := AssetRegistry.make_visual(
+		"breakable_pillar",
+		Vector2(90, 420),
+		Color("7c786f"),
+		"PILLAR"
 	)
+
+	# Visual-কে উপরে তুলি
+	pillar_visual.position = Vector2(0, -60)
+	add_child(pillar_visual)
+
+	var collision_shape := get_node_or_null(
+		"CollisionShape2D"
+	) as CollisionShape2D
+
+	if collision_shape != null:
+		var rectangle := (
+			collision_shape.shape
+			as RectangleShape2D
+		)
+
+		if rectangle != null:
+			var new_rectangle := (
+				rectangle.duplicate()
+				as RectangleShape2D
+			)
+
+			new_rectangle.size = Vector2(90, 420)
+			collision_shape.shape = new_rectangle
+
+		# Collision-কে visual-এর সাথে align করি
+		collision_shape.position = Vector2(0, -60)
+	else:
+		push_warning(
+			"BreakablePillar has no CollisionShape2D node."
+		)
 
 	add_to_group("resettable")
 	add_to_group("freezable")
@@ -33,7 +61,7 @@ func _ready() -> void:
 func set_world_active(active: bool) -> void:
 	world_active = active
 
-	if world_active:
+	if world_active and not broken_once:
 		collision_layer = (
 			CollisionLayers.WORLD
 			| CollisionLayers.KICKABLE
@@ -45,16 +73,25 @@ func set_world_active(active: bool) -> void:
 			| CollisionLayers.PROJECTILE
 		)
 	else:
-		break_generation += 1
+		if not world_active:
+			break_generation += 1
 
-		if active_tween != null and active_tween.is_valid():
-			active_tween.kill()
+			if (
+				active_tween != null
+				and active_tween.is_valid()
+			):
+				active_tween.kill()
 
-		collision_layer = CollisionLayers.WORLD
-		collision_mask = (
-			CollisionLayers.PLAYER
-			| CollisionLayers.ENEMY
-		)
+		if broken_once:
+			collision_layer = 0
+			collision_mask = 0
+		else:
+			collision_layer = CollisionLayers.WORLD
+
+			collision_mask = (
+				CollisionLayers.PLAYER
+				| CollisionLayers.ENEMY
+			)
 
 
 func receive_projectile(
@@ -85,7 +122,11 @@ func receive_kick(
 	charged: bool,
 	_source: Node
 ) -> void:
-	if world_active and charged:
+	if (
+		world_active
+		and charged
+		and not broken_once
+	):
 		break_pillar()
 
 
@@ -99,7 +140,9 @@ func break_pillar() -> void:
 	broken_once = true
 	modulate = Color("ffb17c")
 
-	await get_tree().create_timer(0.55).timeout
+	await get_tree().create_timer(
+		0.55
+	).timeout
 
 	if (
 		token != break_generation
@@ -108,8 +151,7 @@ func break_pillar() -> void:
 	):
 		return
 
-	# Pillar rotate হওয়ার আগেই collision বন্ধ।
-	# এতে player pillar-এর উপরে ছিটকে উঠবে না।
+	# Rotate হওয়ার আগেই collision বন্ধ
 	collision_layer = 0
 	collision_mask = 0
 
@@ -120,7 +162,11 @@ func break_pillar() -> void:
 		"rotation",
 		float(fall_direction) * 1.42,
 		0.55
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	).set_trans(
+		Tween.TRANS_QUAD
+	).set_ease(
+		Tween.EASE_IN
+	)
 
 	await active_tween.finished
 
@@ -138,7 +184,7 @@ func break_pillar() -> void:
 	var shape_node := CollisionShape2D.new()
 	var rectangle := RectangleShape2D.new()
 
-	rectangle.size = Vector2(280, 120)
+	rectangle.size = Vector2(320, 130)
 	shape_node.shape = rectangle
 
 	stun_zone.add_child(shape_node)
@@ -147,8 +193,8 @@ func break_pillar() -> void:
 	stun_zone.global_position = (
 		global_position
 		+ Vector2(
-			float(fall_direction) * 125.0,
-			-55.0
+			float(fall_direction) * 145.0,
+			-70.0
 		)
 	)
 
@@ -173,7 +219,10 @@ func break_pillar() -> void:
 func reset_state() -> void:
 	break_generation += 1
 
-	if active_tween != null and active_tween.is_valid():
+	if (
+		active_tween != null
+		and active_tween.is_valid()
+	):
 		active_tween.kill()
 
 	active_tween = null
