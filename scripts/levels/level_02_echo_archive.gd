@@ -555,13 +555,17 @@ func _ear_awakened() -> void:
 	)
 
 	set_objective(
-		"Hold A or D to make noise. Lure the Warden into the cracked wall."
+		"Stand clear. The Warden will smash the cracked wall."
 	)
 
 	warden.awaken_hearing()
 
-	# No automatic wall charge. The Warden now follows Arin only while
-	# movement input is held, and the wall breaks only if the chase reaches it.
+	# The first Hearing charge is scripted toward the cracked wall.
+	# Arin no longer needs to cross over the Warden and lure it manually.
+	warden.force_charge_at(
+		cracked_wall.global_position
+	)
+
 	orb.set_pedestal(EYE_ORB_PEDESTAL)
 
 

@@ -39,7 +39,6 @@ var dialogue_sequence_counter := 0
 var dialogue_locked_sequences: Dictionary = {}
 var manual_dialogue_advance_enabled := false
 
-
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	root = Control.new()
@@ -57,14 +56,23 @@ func _ready() -> void:
 		EventBus.dialogue_requested.connect(queue_dialogue)
 	if not EventBus.dialogue_clear_requested.is_connected(clear_dialogue_queue):
 		EventBus.dialogue_clear_requested.connect(clear_dialogue_queue)
-	EventBus.player_damaged.connect(func(_amount: int) -> void: update_stats())
-	EventBus.player_health_changed.connect(
-		func(_current: int, _maximum: int) -> void: update_stats()
+	EventBus.player_damaged.connect(
+		func(_amount: int) -> void:
+			update_stats()
 	)
-	EventBus.kick_charge_changed.connect(func(value: float) -> void: charge_bar.value = value)
-	EventBus.star_ammo_changed.connect(func(_current: int, _maximum: int) -> void: update_stats())
+	EventBus.player_health_changed.connect(
+		func(_current: int, _maximum: int) -> void:
+			update_stats()
+	)
+	EventBus.kick_charge_changed.connect(
+		func(value: float) -> void:
+			charge_bar.value = value
+	)
+	EventBus.star_ammo_changed.connect(
+		func(_current: int, _maximum: int) -> void:
+			update_stats()
+	)
 	update_stats()
-
 
 func _exit_tree() -> void:
 	if EventBus.dialogue_requested.is_connected(queue_dialogue):
@@ -72,7 +80,6 @@ func _exit_tree() -> void:
 	if EventBus.dialogue_clear_requested.is_connected(clear_dialogue_queue):
 		EventBus.dialogue_clear_requested.disconnect(clear_dialogue_queue)
 	clear_dialogue_queue()
-
 
 func _input(event: InputEvent) -> void:
 	if not manual_dialogue_advance_enabled:
@@ -85,26 +92,32 @@ func _input(event: InputEvent) -> void:
 		request_dialogue_advance()
 	get_viewport().set_input_as_handled()
 
-
 func _is_dialogue_advance_event(event: InputEvent) -> bool:
 	if event is InputEventKey:
 		var key_event := event as InputEventKey
 		if not key_event.pressed or key_event.echo:
 			return false
 		var allowed_keys: Array[int] = [KEY_E, KEY_ENTER, KEY_KP_ENTER]
-		return key_event.keycode in allowed_keys or key_event.physical_keycode in allowed_keys
+		return (
+			key_event.keycode in allowed_keys
+			or key_event.physical_keycode in allowed_keys
+		)
 	if event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
-		return mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT
+		return (
+			mouse_event.pressed
+			and mouse_event.button_index == MOUSE_BUTTON_LEFT
+		)
 	return false
-
 
 func _build_status_panel() -> void:
 	status_panel = PanelContainer.new()
 	var panel := status_panel
 	panel.position = Vector2(28, 24)
 	panel.size = Vector2(430, 208)
-	panel.add_theme_stylebox_override("panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84)))
+	panel.add_theme_stylebox_override(
+		"panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84))
+	)
 	root.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
@@ -135,18 +148,16 @@ func _build_status_panel() -> void:
 	sigil_icons.add_theme_constant_override("separation", 6)
 	box.add_child(sigil_icons)
 
-
 func _build_center_panel() -> void:
 	center_panel = PanelContainer.new()
 	var panel := center_panel
 	panel.position = Vector2(710, 22)
 	panel.size = Vector2(500, 150)
-	(
-		panel
-		. add_theme_stylebox_override(
-			"panel",
-			UIFactory.panel_style_for("timer_panel", Color(0.02, 0.04, 0.07, 0.72)),
-		)
+	panel.add_theme_stylebox_override(
+		"panel",
+		UIFactory.panel_style_for(
+			"timer_panel", Color(0.02, 0.04, 0.07, 0.72)
+		),
 	)
 	root.add_child(panel)
 	var center := VBoxContainer.new()
@@ -157,18 +168,16 @@ func _build_center_panel() -> void:
 	timer_label = UIFactory.make_title("", 30)
 	center.add_child(timer_label)
 
-
 func _build_objective_panel() -> void:
 	objective_panel = PanelContainer.new()
 	var panel := objective_panel
 	panel.position = Vector2(1390, 24)
 	panel.size = Vector2(500, 152)
-	(
-		panel
-		. add_theme_stylebox_override(
-			"panel",
-			UIFactory.panel_style_for("objective_panel", Color(0.03, 0.05, 0.08, 0.84)),
-		)
+	panel.add_theme_stylebox_override(
+		"panel",
+		UIFactory.panel_style_for(
+			"objective_panel", Color(0.03, 0.05, 0.08, 0.84)
+		),
 	)
 	root.add_child(panel)
 	objective_label = Label.new()
@@ -176,13 +185,14 @@ func _build_objective_panel() -> void:
 	objective_label.add_theme_font_size_override("font_size", 21)
 	panel.add_child(objective_label)
 
-
 func _build_charge_panel() -> void:
 	charge_panel = PanelContainer.new()
 	var panel := charge_panel
-	panel.position = Vector2(1220, 884)
-	panel.size = Vector2(670, 156)
-	panel.add_theme_stylebox_override("panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84)))
+	panel.position = Vector2(1340, 884)
+	panel.size = Vector2(550, 156)
+	panel.add_theme_stylebox_override(
+		"panel", UIFactory.panel_style(Color(0.03, 0.05, 0.08, 0.84))
+	)
 	root.add_child(panel)
 	var box := VBoxContainer.new()
 	panel.add_child(box)
@@ -190,7 +200,11 @@ func _build_charge_panel() -> void:
 	icon_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	icon_row.add_theme_constant_override("separation", 18)
 	icon_row.add_child(_icon_or_label("kick_icon", "J  KICK", Vector2(52, 52)))
-	icon_row.add_child(_icon_or_label("charged_kick_icon", "K  CHARGED", Vector2(52, 52)))
+	icon_row.add_child(
+		_icon_or_label(
+			"charged_kick_icon", "K  CHARGED", Vector2(52, 52)
+		)
+	)
 	icon_row.add_child(_icon_or_label("star_icon", "I  STAR", Vector2(52, 52)))
 	box.add_child(icon_row)
 	charge_bar = ProgressBar.new()
@@ -199,38 +213,26 @@ func _build_charge_panel() -> void:
 	charge_bar.show_percentage = false
 	box.add_child(charge_bar)
 
-
 func _build_dialogue_panel() -> void:
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(320, 210)
 	dialogue_panel.size = Vector2(1280, 150)
-	(
-		dialogue_panel
-		. add_theme_stylebox_override(
-			"panel",
-			(
-				UIFactory
-				. panel_style_for(
-					"dialogue_box",
-					Color(0.025, 0.04, 0.075, 0.96),
-					Color("60b8ca"),
-				)
-			),
-		)
+	dialogue_panel.add_theme_stylebox_override(
+		"panel",
+		UIFactory.panel_style_for(
+			"dialogue_box",
+			Color(0.025, 0.04, 0.075, 0.96),
+			Color("60b8ca"),
+		),
 	)
 	dialogue_panel.visible = false
 	root.add_child(dialogue_panel)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 18)
+	row.add_theme_constant_override("separation",18)
 	dialogue_panel.add_child(row)
-	portrait = TextureRect.new()
-	portrait.custom_minimum_size = Vector2(130, 170)
-	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	portrait.visible = false
-	row.add_child(portrait)
+	portrait=TextureRect.new();portrait.custom_minimum_size=Vector2(130,170);portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;portrait.visible=false;row.add_child(portrait)
 	var box := VBoxContainer.new()
-	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	row.add_child(box)
 	speaker_label = Label.new()
 	speaker_label.add_theme_font_size_override("font_size", 26)
@@ -239,20 +241,18 @@ func _build_dialogue_panel() -> void:
 	dialogue_label = Label.new()
 	dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dialogue_label.add_theme_font_size_override("font_size", 25)
-	dialogue_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dialogue_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	box.add_child(dialogue_label)
-
 
 func _build_boss_panel() -> void:
 	boss_panel = PanelContainer.new()
 	boss_panel.position = Vector2(610, 175)
 	boss_panel.size = Vector2(700, 120)
-	(
-		boss_panel
-		. add_theme_stylebox_override(
-			"panel",
-			UIFactory.panel_style(Color(0.05, 0.025, 0.07, 0.9), Color("a76cd0")),
-		)
+	boss_panel.add_theme_stylebox_override(
+		"panel",
+		UIFactory.panel_style(
+			Color(0.05, 0.025, 0.07, 0.9), Color("a76cd0")
+		),
 	)
 	boss_panel.visible = false
 	root.add_child(boss_panel)
@@ -274,7 +274,6 @@ func _build_boss_panel() -> void:
 	truth_status_label.visible = false
 	box.add_child(truth_status_label)
 
-
 func _icon_or_label(key: String, fallback: String, size: Vector2) -> Control:
 	var texture := AssetRegistry.load_texture(key)
 	if texture != null:
@@ -291,12 +290,10 @@ func _icon_or_label(key: String, fallback: String, size: Vector2) -> Control:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return label
 
-
 func _clear_container(container: Container) -> void:
 	for child in container.get_children():
 		container.remove_child(child)
 		child.queue_free()
-
 
 func update_stats() -> void:
 	_clear_container(health_icons)
@@ -306,14 +303,12 @@ func update_stats() -> void:
 	)
 	for i in GameState.max_health:
 		if health_texture_available:
-			(
-				health_icons
-				. add_child(
-					_icon_or_label(
-						"health_full" if i < GameState.current_health else "health_empty",
-						"◆" if i < GameState.current_health else "◇",
-						Vector2(34, 34),
-					)
+			health_icons.add_child(
+				_icon_or_label(
+					"health_full" if i < GameState.current_health
+					else "health_empty",
+					"◆" if i < GameState.current_health else "◇",
+					Vector2(34, 34),
 				)
 			)
 		else:
@@ -329,14 +324,11 @@ func update_stats() -> void:
 	for key: String in GameState.sigils.keys():
 		if bool(GameState.sigils[key]):
 			collected += 1
-			(
-				sigil_icons
-				. add_child(
-					_icon_or_label(
-						"sigil_" + key,
-						key.to_upper(),
-						Vector2(34, 34),
-					)
+			sigil_icons.add_child(
+				_icon_or_label(
+					"sigil_" + key,
+					key.to_upper(),
+					Vector2(34, 34),
 				)
 			)
 	if collected == 0:
@@ -357,15 +349,12 @@ func set_gameplay_hud_visible(visible: bool, show_state: bool = true) -> void:
 	if not visible:
 		timer_label.visible = false
 
-
 func set_state_panel_visible(visible: bool) -> void:
 	if center_panel != null:
 		center_panel.visible = visible
 
-
 func set_manual_dialogue_advance_enabled(enabled: bool) -> void:
 	manual_dialogue_advance_enabled = enabled
-
 
 func set_world_state(frozen: bool) -> void:
 	state_label.text = "WORLD FROZEN" if frozen else "KICKOFF!"
@@ -376,20 +365,16 @@ func set_world_state(frozen: bool) -> void:
 		tween.tween_property(state_label, "modulate:a", 0.0, 0.4)
 		tween.tween_callback(_clear_state_label)
 
-
 func _clear_state_label() -> void:
 	state_label.text = ""
 	state_label.modulate.a = 1.0
-
 
 func set_timer(value: float, visible_timer: bool) -> void:
 	timer_label.visible = visible_timer
 	timer_label.text = "%05.1f" % maxf(value, 0.0)
 
-
 func set_objective(text: String) -> void:
 	objective_label.text = "OBJECTIVE\n" + text
-
 
 func queue_dialogue(
 	speaker: String,
@@ -419,12 +404,12 @@ func queue_dialogue(
 	if not dialogue_running:
 		call_deferred("_process_dialogue_queue")
 
-
 func show_dialogue(speaker: String, text: String, duration: float) -> void:
 	queue_dialogue(speaker, text, duration)
 
-
-func show_dialogue_sequence(lines: Array, lock_player: bool = false) -> bool:
+func show_dialogue_sequence(
+	lines: Array, lock_player: bool = false
+) -> bool:
 	if lines.is_empty():
 		return true
 	dialogue_sequence_counter += 1
@@ -450,7 +435,6 @@ func show_dialogue_sequence(lines: Array, lock_player: bool = false) -> bool:
 			return bool(result[1])
 	return false
 
-
 func _process_dialogue_queue() -> void:
 	if dialogue_running:
 		return
@@ -462,12 +446,9 @@ func _process_dialogue_queue() -> void:
 		current_dialogue = dialogue_queue.pop_front()
 		dialogue_manual_advance = false
 		_display_dialogue_entry(current_dialogue)
-		(
-			dialogue_line_started
-			. emit(
-				str(current_dialogue.get("speaker", "")),
-				str(current_dialogue.get("text", "")),
-			)
+		dialogue_line_started.emit(
+			str(current_dialogue.get("speaker", "")),
+			str(current_dialogue.get("text", "")),
 		)
 		var elapsed := 0.0
 		var duration := float(current_dialogue.get("duration", 0.1))
@@ -484,15 +465,14 @@ func _process_dialogue_queue() -> void:
 		var finished_entry := current_dialogue
 		current_dialogue = {}
 		dialogue_panel.visible = false
-		(
-			dialogue_line_finished
-			. emit(
-				str(finished_entry.get("speaker", "")),
-				str(finished_entry.get("text", "")),
-			)
+		dialogue_line_finished.emit(
+			str(finished_entry.get("speaker", "")),
+			str(finished_entry.get("text", "")),
 		)
 		if bool(finished_entry.get("sequence_last", false)):
-			_finish_dialogue_sequence(int(finished_entry.get("sequence_id", 0)), true)
+			_finish_dialogue_sequence(
+				int(finished_entry.get("sequence_id", 0)), true
+			)
 	if token != dialogue_generation:
 		return
 	dialogue_running = false
@@ -500,7 +480,6 @@ func _process_dialogue_queue() -> void:
 	dialogue_panel.visible = false
 	GameState.set_dialogue_active(false)
 	dialogue_queue_finished.emit()
-
 
 func _display_dialogue_entry(entry: Dictionary) -> void:
 	var speaker := str(entry.get("speaker", ""))
@@ -513,19 +492,23 @@ func _display_dialogue_entry(entry: Dictionary) -> void:
 		elif speaker.to_upper() == "NIKO":
 			portrait_key = "niko_portrait"
 	var portrait_texture := (
-		AssetRegistry.load_texture(portrait_key) if not portrait_key.is_empty() else null
+		AssetRegistry.load_texture(portrait_key)
+		if not portrait_key.is_empty()
+		else null
 	)
 	portrait.texture = portrait_texture
 	portrait.visible = portrait_texture != null
 	dialogue_panel.visible = true
 
-
 func request_dialogue_advance() -> bool:
-	if not dialogue_running or current_dialogue.is_empty() or dialogue_manual_advance:
+	if (
+		not dialogue_running
+		or current_dialogue.is_empty()
+		or dialogue_manual_advance
+	):
 		return false
 	dialogue_manual_advance = true
 	return true
-
 
 func clear_dialogue_queue() -> void:
 	dialogue_generation += 1
@@ -551,7 +534,6 @@ func clear_dialogue_queue() -> void:
 		EventBus.cutscene_ended.emit()
 	GameState.clear_dialogue_state(true)
 
-
 func _finish_dialogue_sequence(sequence_id: int, completed: bool) -> void:
 	if sequence_id <= 0:
 		return
@@ -561,14 +543,11 @@ func _finish_dialogue_sequence(sequence_id: int, completed: bool) -> void:
 			EventBus.cutscene_ended.emit()
 	dialogue_sequence_finished.emit(sequence_id, completed)
 
-
 func has_pending_dialogue() -> bool:
 	return dialogue_running or not dialogue_queue.is_empty()
 
-
 func show_message(text: String, duration: float = 1.5) -> void:
 	queue_dialogue("SYSTEM", text, duration, 0)
-
 
 func show_boss(name: String, maximum: int, phase: String) -> void:
 	boss_panel.visible = true
@@ -577,20 +556,16 @@ func show_boss(name: String, maximum: int, phase: String) -> void:
 	boss_health.value = maximum
 	phase_label.text = phase
 
-
 func update_boss(current: int, maximum: int) -> void:
 	boss_health.max_value = maximum
 	boss_health.value = current
 
-
 func set_boss_phase(text: String) -> void:
 	phase_label.text = text
-
 
 func set_truth_pulse_status(text: String) -> void:
 	truth_status_label.text = text
 	truth_status_label.visible = not text.is_empty()
-
 
 func hide_boss() -> void:
 	boss_panel.visible = false

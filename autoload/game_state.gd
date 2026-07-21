@@ -24,9 +24,6 @@ var dialogue_active: bool = false
 var dialogue_input_release_guard: bool = false
 var _dialogue_release_armed_frame: int = -1
 
-# Normal dialogue / SYSTEM text is a non-blocking overlay.
-# Explicit cinematic sequences can still lock Arin through cutscene signals.
-
 func _ready() -> void:
     process_mode = Node.PROCESS_MODE_ALWAYS
 
@@ -43,10 +40,8 @@ func set_dialogue_active(active: bool) -> void:
     if active:
         dialogue_input_release_guard = false
         _dialogue_release_armed_frame = -1
-
     if dialogue_active == active:
         return
-
     dialogue_active = active
     if not active:
         _arm_dialogue_release_guard()
@@ -55,21 +50,16 @@ func set_dialogue_active(active: bool) -> void:
 func clear_dialogue_state(suppress_closing_input: bool = true) -> void:
     var changed := dialogue_active
     dialogue_active = false
-
     if suppress_closing_input:
         _arm_dialogue_release_guard()
     else:
         dialogue_input_release_guard = false
         _dialogue_release_armed_frame = -1
-
     if changed:
         EventBus.dialogue_active_changed.emit(false)
 
 func is_gameplay_input_blocked() -> bool:
-    # Dialogue itself must not stop Arin or the running level.
-    # The short release guard only prevents the key that closed text from
-    # leaking into gameplay on the same frame.
-    return dialogue_input_release_guard
+    return dialogue_active or dialogue_input_release_guard
 
 func _arm_dialogue_release_guard() -> void:
     dialogue_input_release_guard = true
